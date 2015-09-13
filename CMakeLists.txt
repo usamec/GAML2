@@ -26,6 +26,5 @@ target_link_libraries(path_test path ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS
 add_test(PathTest path_test)
 
 
-
 add_executable(gaml gaml_main.cc)
-target_link_libraries(gaml graph)
+target_link_libraries(gaml graph path)

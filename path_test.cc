@@ -33,3 +33,12 @@ TEST(PathTest, CheckPathTest2) {
   Path p({a, b});
   EXPECT_EQ(false, p.CheckPath());
 }
+
+TEST(PathTest, TestPathOut) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  Path p({a, b});
+  EXPECT_EQ("(1,2)", p.ToDebugString());
+}

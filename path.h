@@ -14,8 +14,12 @@ class Path {
   }
 
   bool CheckPath() const;
+
+  string ToDebugString() const;
 };
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);
+
+string PathsToDebugString(const vector<Path>& paths);
 
 #endif 
