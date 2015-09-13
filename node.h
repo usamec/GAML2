@@ -16,6 +16,10 @@ class Node {
     next_.push_back(x);
   }
 
+  bool IsBig(size_t threshold) const {
+    return str_.size() >= threshold;
+  }
+
   string str_;
   int id_;
   Node* rc_;

@@ -28,7 +28,7 @@ pair<int, int> LoadArc(istream& is) {
                    VelvetNumToMyNum(stoi(arc_tokens[2])));
 }
 
-Graph* LoadGraph(string &filename) {
+Graph* LoadGraph(const string &filename) {
   ifstream is(filename);
   if (!is) return NULL;
   return LoadGraph(is);
@@ -58,4 +58,14 @@ Graph* LoadGraph(istream &is) {
     }
   }
   return g;
+}
+
+vector<Node*> Graph::GetBigNodes(int threshold) const {
+  vector<Node*> ret;
+  for (size_t i = 0; i < nodes_.size(); i+= 2) {
+    if (nodes_[i]->IsBig(threshold)) {
+      ret.push_back(nodes_[i]);
+    }
+  }
+  return ret;
 }
