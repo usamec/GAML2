@@ -13,6 +13,7 @@ target_link_libraries(node_test node ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS
 add_test(NodeTest node_test)
 
 add_library(graph graph.cc)
+target_link_libraries(graph node)
 
 add_executable(graph_test graph_test.cc)
 target_link_libraries(graph_test graph ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
