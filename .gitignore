@@ -1,0 +1,9 @@
+velvet/*
+test_data/*
+*.swp
+CMakeCache.txt
+CMakeFiles/*
+Makefile
+*.cmake
+Testing/*
+*.a
