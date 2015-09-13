@@ -20,6 +20,7 @@ class Path {
   bool CheckPath() const;
 
   void AppendPath(const Path& p);
+  void AppendPathWithGap(const Path &p, int gap_length);
 
   void Reverse();
   Path GetReverse();

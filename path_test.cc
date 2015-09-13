@@ -83,3 +83,51 @@ TEST(PathTest, ReversePathTest1) {
   EXPECT_EQ(1, p2[0]->id_);
   EXPECT_EQ(3, p2[1]->id_);
 }
+
+TEST(PathTest, AppendPathWithGapTest) {
+  Node* a = new Node;
+  Node* ar = new Node;
+  a->id_ = 1;
+  a->rc_ = ar;
+  ar->rc_ = a;
+  Node* b = new Node;
+  Node* br = new Node;
+  b->id_ = 2;
+  b->rc_ = br;
+  br->rc_ = b;
+  a->AddNext(b);
+  br->AddNext(ar);
+  Path p({a, b});
+  Node* c = new Node;
+  Node* cr = new Node;
+  c->id_ = 3;
+  c->rc_ = cr;
+  cr->rc_ = c;
+  Node* d = new Node;
+  Node* dr = new Node;
+  d->id_ = 4;
+  d->rc_ = dr;
+  dr->rc_ = d;
+  c->AddNext(d);
+  dr->AddNext(cr);
+  Path p2({c, d});
+  p.AppendPathWithGap(p2, 47);
+  ASSERT_EQ(5, p.size());
+  EXPECT_EQ(a, p[0]);
+  EXPECT_EQ(b, p[1]);
+  EXPECT_EQ(c, p[3]);
+  EXPECT_EQ(d, p[4]);
+  EXPECT_EQ(true, p.CheckPath());
+  EXPECT_EQ(47, p[2]->GapLength());
+  EXPECT_EQ(true, p[2]->IsGap());
+  p.Reverse();
+  ASSERT_EQ(5, p.size());
+  EXPECT_EQ(dr, p[0]);
+  EXPECT_EQ(cr, p[1]);
+  EXPECT_EQ(br, p[3]);
+  EXPECT_EQ(ar, p[4]);
+  EXPECT_EQ(true, p.CheckPath());
+  EXPECT_EQ(47, p[2]->GapLength());
+  EXPECT_EQ(true, p[2]->IsGap());
+}
+

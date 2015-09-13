@@ -20,6 +20,14 @@ class Node {
     return str_.size() >= threshold;
   }
 
+  bool IsGap() const {
+    return id_ < 0;
+  }
+
+  int GapLength() const {
+    return id_ < 0 ? -id_ : 0;
+  }
+
   string str_;
   int id_;
   Node* rc_;
@@ -27,5 +35,6 @@ class Node {
 };
 
 pair<Node*,Node*> LoadNode(istream& is, int number);
+Node* MakeGap(int gap_length);
 
 #endif

@@ -13,3 +13,10 @@ pair<Node*, Node*> LoadNode(istream& is, int number) {
 
   return make_pair(f, b);
 }
+
+Node* MakeGap(int gap_length) {
+  Node* ret = new Node;
+  ret->id_ = -gap_length;
+  ret->rc_ = ret;
+  return ret;
+}

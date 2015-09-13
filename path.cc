@@ -12,6 +12,7 @@ vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
 
 bool Path::CheckPath() const {
   for (size_t i = 0; i + 1 < nodes_.size(); i++) {
+    if (nodes_[i]->IsGap() || nodes_[i+1]->IsGap()) continue;
     if (find(nodes_[i]->next_.begin(), nodes_[i]->next_.end(), nodes_[i+1]) ==
         nodes_[i]->next_.end()) {
       return false;
@@ -46,6 +47,11 @@ string PathsToDebugString(const vector<Path>& paths) {
 }
 
 void Path::AppendPath(const Path& p) {
+  nodes_.insert(nodes_.end(), p.nodes_.begin(), p.nodes_.end());
+}
+
+void Path::AppendPathWithGap(const Path& p, int gap_length) {
+  nodes_.push_back(MakeGap(gap_length));
   nodes_.insert(nodes_.end(), p.nodes_.begin(), p.nodes_.end());
 }
 
