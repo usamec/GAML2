@@ -5,5 +5,5 @@ CMakeCache.txt
 CMakeFiles/*
 Makefile
 *.cmake
-Testing/*
+build/*
 *.a
