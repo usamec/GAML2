@@ -13,7 +13,16 @@ class Path {
     return nodes_[x];
   }
 
+  size_t size() const {
+    return nodes_.size();
+  }
+
   bool CheckPath() const;
+
+  void AppendPath(const Path& p);
+
+  void Reverse();
+  Path GetReverse();
 
   string ToDebugString() const;
 };

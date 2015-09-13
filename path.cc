@@ -44,3 +44,25 @@ string PathsToDebugString(const vector<Path>& paths) {
   }
   return ret.str();
 }
+
+void Path::AppendPath(const Path& p) {
+  nodes_.insert(nodes_.end(), p.nodes_.begin(), p.nodes_.end());
+}
+
+void Path::Reverse() {
+  vector<Node*> nodes_new;
+  for (int i = nodes_.size() - 1; i >= 0; i--) {
+    nodes_new.push_back(nodes_[i]->rc_);
+  }
+  nodes_ = nodes_new;
+}
+
+Path Path::GetReverse() {
+  vector<Node*> nodes_new;
+  for (int i = nodes_.size() - 1; i >= 0; i--) {
+    nodes_new.push_back(nodes_[i]->rc_);
+  }
+  Path ret;
+  ret.nodes_ = nodes_new;
+  return ret;
+}
