@@ -79,7 +79,8 @@ class ReadSet {
   // One sided get
   void GetAlignments(const string& genome, bool reversed, vector<ReadAlignment>& output) const;
 
-  bool ExtendAlignment(const CandidateReadPosition& candidate, const string& genome) const;
+  bool ExtendAlignment(const CandidateReadPosition& candidate, const string& genome,
+                       ReadAlignment& al) const;
 
   vector<string> reads_;
   TIndex index_;

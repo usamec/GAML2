@@ -1,8 +1,9 @@
 #include "read_set.h"
 #include "hash_util.h"
 #include "util.h"
-#include <unordered_set>
+#include <algorithm>
 #include <deque>
+#include <unordered_set>
 
 void StandardReadIndex::AddRead(int id, const string& data) {
   for (size_t i = 0; i + k_ <= data.size(); i++) {
@@ -59,12 +60,37 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
                                     vector<ReadAlignment>& output) const {
   vector<CandidateReadPosition> candidates = index_.GetReadCandidates(genome);
 
+  sort(candidates.begin(), candidates.end());
 
+  int last_read_id = -1;
+  vector<ReadAlignment> buffer;
+  for (auto &cand: candidates) {
+    if (cand.read_id != last_read_id) {
+      output.insert(output.end(), buffer.begin(), buffer.end());
+      buffer.clear();
+    }
+    last_read_id = cand.read_id;
+    ReadAlignment al;
+    if (ExtendAlignment(cand, genome, al)) {
+      auto it = find_if(
+          buffer.begin(), buffer.end(),
+          [&al](const ReadAlignment& a) { return a.read_id == al.read_id && 
+                                                 a.genome_pos == al.genome_pos; });
+      if (it == buffer.end()) {
+        al.reversed = reversed;
+        buffer.push_back(al);
+      } else {
+        it->dist = min(it->dist, al.dist);
+      }
+    }
+  }
+  output.insert(output.end(), buffer.begin(), buffer.end());
 }
 
 template<class TIndex>
 bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
-                                      const string& genome) const {
+                                      const string& genome,
+                                      ReadAlignment& al) const {
   return false;
 }
 
