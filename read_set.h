@@ -16,6 +16,10 @@ struct CandidateReadPosition {
   int read_id, genome_pos, read_pos;
 };
 
+inline bool operator==(const CandidateReadPosition& a, const CandidateReadPosition& b) {
+  return a.read_id == b.read_id && a.genome_pos == b.genome_pos && a.read_pos == b.read_pos;
+}
+
 struct ReadAlignment {
   ReadAlignment() {}
   ReadAlignment(int read_id_, int genome_pos_, int dist_, bool reversed_) :
