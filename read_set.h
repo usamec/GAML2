@@ -5,6 +5,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <vector>
+#include <gtest/gtest.h>
 
 using namespace std;
 
@@ -18,6 +19,14 @@ struct CandidateReadPosition {
 
 inline bool operator==(const CandidateReadPosition& a, const CandidateReadPosition& b) {
   return a.read_id == b.read_id && a.genome_pos == b.genome_pos && a.read_pos == b.read_pos;
+}
+
+inline bool operator<(const CandidateReadPosition& a, const CandidateReadPosition& b) {
+  if (a.read_id < b.read_id) return true;
+  if (a.read_id > b.read_id) return false;
+  if (a.genome_pos < b.genome_pos) return true;
+  if (a.genome_pos > b.genome_pos) return false;
+  return a.read_pos < b.read_pos;
 }
 
 struct ReadAlignment {
@@ -58,11 +67,24 @@ class ReadSet {
   // Two sided get
   vector<ReadAlignment> GetAlignments(const string& genome) const;
 
+  size_t size() const {
+    return reads_.size();
+  }
+
+  const string& operator[](int i) const {
+    return reads_[i];
+  }
+
+ private:
   // One sided get
   void GetAlignments(const string& genome, bool reversed, vector<ReadAlignment>& output) const;
 
+  bool ExtendAlignment(const CandidateReadPosition& candidate, const string& genome) const;
+
   vector<string> reads_;
   TIndex index_;
+
+  FRIEND_TEST(ReadSetTest, ExtendAlignTest);
 };
 
 #endif

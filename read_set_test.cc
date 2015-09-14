@@ -28,4 +28,10 @@ TEST(ReadSetTest, LoadTest) {
 
   ReadSet<> rs;
   rs.LoadReadSet(ss);
+
+  ASSERT_EQ(1, rs.size());
+  EXPECT_EQ("AAGGCTG", rs[0]);
+}
+
+TEST(ReadSetTest, ExtendAlignTest) {
 }

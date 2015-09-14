@@ -2,6 +2,7 @@
 #include "hash_util.h"
 #include "util.h"
 #include <unordered_set>
+#include <deque>
 
 void StandardReadIndex::AddRead(int id, const string& data) {
   for (size_t i = 0; i + k_ <= data.size(); i++) {
@@ -58,6 +59,13 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
                                     vector<ReadAlignment>& output) const {
   vector<CandidateReadPosition> candidates = index_.GetReadCandidates(genome);
 
+
+}
+
+template<class TIndex>
+bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
+                                      const string& genome) const {
+  return false;
 }
 
 template class ReadSet<StandardReadIndex>;
