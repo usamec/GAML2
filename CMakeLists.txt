@@ -30,6 +30,10 @@ add_executable(read_set_test read_set_test.cc)
 target_link_libraries(read_set_test read_set ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(ReadSetTest read_set_test)
 
+add_executable(util_test util_test.cc)
+target_link_libraries(util_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(UtilTest util_test)
+
 add_executable(gaml gaml_main.cc)
 target_link_libraries(gaml graph path)
 

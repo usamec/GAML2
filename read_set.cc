@@ -1,5 +1,6 @@
 #include "read_set.h"
 #include "hash_util.h"
+#include "util.h"
 #include <unordered_set>
 
 void StandardReadIndex::AddRead(int id, const string& data) {
@@ -40,6 +41,23 @@ void ReadSet<TIndex>::LoadReadSet(istream& is) {
     index_.AddRead(id, l2);
     id++;
   }
+}
+
+template<class TIndex>
+vector<ReadAlignment> ReadSet<TIndex>::GetAlignments(const string& genome) const {
+  vector<ReadAlignment> ret;
+  GetAlignments(genome, false, ret);
+  string reversed_genome = ReverseSeq(genome);
+  GetAlignments(reversed_genome, true, ret);
+  return ret;
+}
+
+template<class TIndex>
+void ReadSet<TIndex>::GetAlignments(const string& genome,
+                                    bool reversed,
+                                    vector<ReadAlignment>& output) const {
+  vector<CandidateReadPosition> candidates = index_.GetReadCandidates(genome);
+
 }
 
 template class ReadSet<StandardReadIndex>;

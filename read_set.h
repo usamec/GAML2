@@ -55,6 +55,12 @@ class ReadSet {
 
   void LoadReadSet(istream& is);
 
+  // Two sided get
+  vector<ReadAlignment> GetAlignments(const string& genome) const;
+
+  // One sided get
+  void GetAlignments(const string& genome, bool reversed, vector<ReadAlignment>& output) const;
+
   vector<string> reads_;
   TIndex index_;
 };
