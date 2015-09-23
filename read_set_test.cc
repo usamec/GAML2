@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <tuple>
+#include "util.h"
 
 TEST(StandardReadIndexTest, GetCandidatesTest) {
   StandardReadIndex index(13);
@@ -98,4 +99,170 @@ TEST(ReadSetTest, ExtendAlignTest) {
   EXPECT_EQ(0, al.read_id);
   EXPECT_EQ(1, al.dist);
   EXPECT_EQ(3, al.genome_pos);
+}
+
+TEST(ReadSetTest, GetAlignmentsTest) {
+  stringstream ss;
+  ss << "@a" << endl;
+  ss << "AAAACCCCTTTTGGGG" << endl;
+  ss << "+" << endl;
+  ss << "AAAAAAAAAAAAAAAA" << endl;
+
+  ReadSet<> rs;
+  rs.LoadReadSet(ss);
+
+  vector<ReadAlignment> als = rs.GetAlignments("AAAACCCCTTTTGGGG");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(0, als[0].genome_pos);
+
+  als = rs.GetAlignments("AAAACCCCTTTTGGCG");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(1, als[0].dist);
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(0, als[0].genome_pos);
+
+  als = rs.GetAlignments("CCCCAAAACCCCTTTTGGCG");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(1, als[0].dist);
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(4, als[0].genome_pos);
+
+  als = rs.GetAlignments("CCCCAAAAGGGGTTTT");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(0, als[0].genome_pos);
+
+  als = rs.GetAlignments("CCCCAAAAGGGGTTTTAA");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(0, als[0].genome_pos);
+
+  als = rs.GetAlignments("AAACCCCAAAAGGGGTTTT");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(3, als[0].genome_pos);
+
+  als = rs.GetAlignments("AAACCCCAAAAGGGGTTTTGG");
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(3, als[0].genome_pos);
+}
+
+TEST(ReadSetTest, GetAlignmentsTestBig) {
+  string part1 = "";
+  string part2 = "";
+  srand(47);
+  char alph[] = "ACGT";
+  for (int i = 0; i < 50; i++) {
+    part1 += alph[rand()%4];
+    part2 += alph[rand()%4];
+  }
+
+  stringstream ss;
+  ss << "@a" << endl;
+  ss << part1 << part2 << endl;
+  ss << "+" << endl;
+  ss << part1 << part2 << endl;
+
+  ReadSet<> rs;
+  rs.LoadReadSet(ss);
+
+  string genome = "ACGTTT" + part1 + part2 + "GTCT";
+  vector<ReadAlignment> als = rs.GetAlignments(genome);
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(6, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+
+  genome = "ACGTTT" + ReverseSeq(part1+part2) + "GTCT";
+  als = rs.GetAlignments(genome);
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(6, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+
+  genome = "ACGTTT" + part1 + "ACTGAA" + part2 + "GTCT";
+  als = rs.GetAlignments(genome);
+  ASSERT_EQ(1, als.size());
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(6, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(6, als[0].dist);
+}
+
+TEST(ReadSetTest, GetAlignmentsTestMoreReads) {
+  string part1 = "";
+  string part2 = "";
+  string part3 = "";
+  srand(47);
+  char alph[] = "ACGT";
+  for (int i = 0; i < 50; i++) {
+    part1 += alph[rand()%4];
+    part2 += alph[rand()%4];
+    part3 += alph[rand()%4];
+  }
+
+  stringstream ss;
+  ss << "@a" << endl;
+  ss << part1 << part2 << endl;
+  ss << "+" << endl;
+  ss << part1 << part2 << endl;
+  ss << "@b" << endl;
+  ss << part2 << part3 << endl;
+  ss << "+" << endl;
+  ss << part2 << part3 << endl;
+
+  ReadSet<> rs;
+  rs.LoadReadSet(ss);
+
+  string genome = "ACGTTT" + part1 + part2 + part3 + "GTCT";
+  vector<ReadAlignment> als = rs.GetAlignments(genome);
+  ASSERT_EQ(2, als.size());
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(6, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(false, als[1].reversed);
+  EXPECT_EQ(56, als[1].genome_pos);
+  EXPECT_EQ(1, als[1].read_id);
+  EXPECT_EQ(0, als[1].dist);
+
+  genome = "ACGTTT" + ReverseSeq(part1+part2+part3) + "GTCT";
+  als = rs.GetAlignments(genome);
+  ASSERT_EQ(2, als.size());
+  EXPECT_EQ(true, als[0].reversed);
+  EXPECT_EQ(56, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(0, als[0].dist);
+  EXPECT_EQ(true, als[1].reversed);
+  EXPECT_EQ(6, als[1].genome_pos);
+  EXPECT_EQ(1, als[1].read_id);
+  EXPECT_EQ(0, als[1].dist);
+
+  genome = "ACGTTT" + part1 + "ACTGAA" + part2 + "GGAATT" + part3 + "GTCT";
+  als = rs.GetAlignments(genome);
+  ASSERT_EQ(2, als.size());
+  EXPECT_EQ(false, als[0].reversed);
+  EXPECT_EQ(6, als[0].genome_pos);
+  EXPECT_EQ(0, als[0].read_id);
+  EXPECT_EQ(6, als[0].dist);
+  EXPECT_EQ(false, als[1].reversed);
+  EXPECT_EQ(62, als[1].genome_pos);
+  EXPECT_EQ(1, als[1].read_id);
+  EXPECT_EQ(6, als[1].dist);
 }

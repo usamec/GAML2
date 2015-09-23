@@ -72,6 +72,9 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
     last_read_id = cand.read_id;
     ReadAlignment al;
     if (ExtendAlignment(cand, genome, al)) {
+      if (reversed) {
+        al.genome_pos = genome.size() - al.genome_pos - reads_[cand.read_id].size();
+      }
       auto it = find_if(
           buffer.begin(), buffer.end(),
           [&al](const ReadAlignment& a) { return a.read_id == al.read_id && 
