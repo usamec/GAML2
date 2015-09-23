@@ -54,6 +54,15 @@ class StandardReadIndex {
 
 template<class TIndex=StandardReadIndex>
 class ReadSet {
+  class VisitedPositions {
+   vector<vector<vector<int>>> vp_;
+   public:
+    void Prepare(int max_err, int read_size);
+    
+    bool IsVisited(pair<int, pair<int, int>> pos) const;
+    void Add(pair<int, pair<int, int>> pos);
+  };
+
  public:
   ReadSet() {}
 
