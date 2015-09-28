@@ -26,6 +26,8 @@ class Path {
   Path GetReverse();
 
   string ToDebugString() const;
+
+  string ToString(bool with_endings=false) const; 
 };
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);

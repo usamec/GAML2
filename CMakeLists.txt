@@ -22,7 +22,7 @@ add_test(GraphTest graph_test)
 add_library(path path.cc)
 target_link_libraries(path node)
 add_executable(path_test path_test.cc)
-target_link_libraries(path_test path ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(path_test path ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} graph)
 add_test(PathTest path_test)
 
 add_library(read_set read_set.cc)

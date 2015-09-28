@@ -1,4 +1,7 @@
 #include "path.h"
+#include "graph.h"
+#include "util.h"
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 
@@ -70,5 +73,17 @@ Path Path::GetReverse() {
   }
   Path ret;
   ret.nodes_ = nodes_new;
+  return ret;
+}
+
+string Path::ToString(bool with_endings) const {
+  string ret = "";
+  if (with_endings) {
+    assert((int) nodes_[0]->str_.size() > nodes_[0]->graph_->k_ - 1);
+    ret = ReverseSeq(nodes_[0]->rc_->str_).substr(0, nodes_[0]->graph_->k_ - 1);
+  }
+  for (auto &n: nodes_) {
+    ret += n->str_;
+  }
   return ret;
 }

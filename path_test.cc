@@ -1,4 +1,5 @@
 #include "path.h"
+#include "graph.h"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <tuple>
@@ -131,3 +132,33 @@ TEST(PathTest, AppendPathWithGapTest) {
   EXPECT_EQ(true, p[2]->IsGap());
 }
 
+TEST(PathTest, PathToStringTest) {
+  stringstream ss;
+  ss << "2\t1000\t41\t1\n";
+  ss << "NODE\t1\t121\t0\t0\n";
+  ss << "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTA\n";
+  ss << "CTAAAAGATGACCCAAGCCAAAGCGCTAACCTTTTAGCAGAAGCTAAAAAGCTAAATGATGCTCAAGCACCAAAAGCTGACAACAAATTCAACAAAGAACAACAAAATGCTTTCTATGAAA\n";
+  ss << "NODE\t2\t4\t0\t0\n";
+  ss << "AGAC\n";
+  ss << "TGCC\n";
+  ss << "ARC\t1\t-2\t44\n";
+  Graph *g = LoadGraph(ss);
+
+  Path p1({g->nodes_[0]});
+  string str_out1 = p1.ToString(false);
+  EXPECT_EQ(121, str_out1.size());
+  EXPECT_EQ(g->nodes_[0]->str_, str_out1);
+  string str_out2 = p1.ToString(true);
+  EXPECT_EQ(161, str_out2.size());
+  EXPECT_EQ("TTTCATAGAAAGCATTTTGTTGTTCTTTGTTGAATTTGTT"
+            "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTA",
+            str_out2);
+
+  Path p2({g->nodes_[0], g->nodes_[2]});
+  string str_out3 = p2.ToString(false);
+  EXPECT_EQ(g->nodes_[0]->str_ + g->nodes_[2]->str_, str_out3);
+  string str_out4 = p2.ToString(true);
+  EXPECT_EQ("TTTCATAGAAAGCATTTTGTTGTTCTTTGTTGAATTTGTT"
+            "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTAAGAC",
+            str_out4);
+}
