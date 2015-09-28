@@ -10,7 +10,7 @@ TEST(NodeTest, LoadNodeTest) {
   ss << "TTCC" << endl;
 
   Node *f, *b;
-  tie(f, b) = LoadNode(ss, 5);
+  tie(f, b) = LoadNode(ss, 5, NULL);
   EXPECT_EQ(10, f->id_);
   EXPECT_EQ(11, b->id_);
   EXPECT_EQ("AACG", f->str_);

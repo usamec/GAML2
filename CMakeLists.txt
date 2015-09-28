@@ -34,6 +34,9 @@ add_executable(util_test util_test.cc)
 target_link_libraries(util_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(UtilTest util_test)
 
+add_library(path_aligner path_aligner.cc)
+target_link_libraries(path_aligner path read_set)
+
 add_executable(gaml gaml_main.cc)
 target_link_libraries(gaml graph path)
 

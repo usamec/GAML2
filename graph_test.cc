@@ -64,4 +64,9 @@ TEST(GraphTest, LoadGraphTest) {
   ASSERT_EQ(0, g->nodes_[3]->next_.size());
   ASSERT_EQ(g->nodes_[3], g->nodes_[0]->next_[0]);
   ASSERT_EQ(g->nodes_[1], g->nodes_[2]->next_[0]);
+
+  EXPECT_EQ(g, g->nodes_[0]->graph_);
+  EXPECT_EQ(g, g->nodes_[1]->graph_);
+  EXPECT_EQ(g, g->nodes_[2]->graph_);
+  EXPECT_EQ(g, g->nodes_[3]->graph_);
 }

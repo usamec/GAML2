@@ -7,10 +7,13 @@
 
 using namespace std;
 
+class Graph;
+
 class Node {
  public:
   Node() {}
-  Node(const string& str, int id) : str_(str), id_(id), rc_(NULL) {}
+  Node(const string& str, int id, Graph* graph) :
+      str_(str), id_(id), rc_(NULL), graph_(graph) {}
 
   void AddNext(Node *x) {
     next_.push_back(x);
@@ -32,9 +35,10 @@ class Node {
   int id_;
   Node* rc_;
   vector<Node*> next_;
+  Graph* graph_;
 };
 
-pair<Node*,Node*> LoadNode(istream& is, int number);
+pair<Node*,Node*> LoadNode(istream& is, int number, Graph* gr);
 Node* MakeGap(int gap_length);
 
 #endif

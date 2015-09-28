@@ -44,7 +44,7 @@ Graph* LoadGraph(istream &is) {
   g->k_ = stoi(header_parts[2]);
   for (int i = 0; i < n_nodes; i++) {
     Node *a, *b;
-    tie(a, b) = LoadNode(is, i);
+    tie(a, b) = LoadNode(is, i, g);
     g->nodes_.push_back(a);
     g->nodes_.push_back(b);
   }

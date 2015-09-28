@@ -1,13 +1,13 @@
 #include "node.h"
 
-pair<Node*, Node*> LoadNode(istream& is, int number) {
+pair<Node*, Node*> LoadNode(istream& is, int number, Graph* gr) {
   string header, forward, backward;
   getline(is, header);
   getline(is, forward);
   getline(is, backward);
 
-  Node *f = new Node(forward, number*2);
-  Node *b = new Node(backward, number*2+1);
+  Node *f = new Node(forward, number*2, gr);
+  Node *b = new Node(backward, number*2+1, gr);
   f->rc_ = b;
   b->rc_ = f;
 
