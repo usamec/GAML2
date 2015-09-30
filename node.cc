@@ -18,5 +18,6 @@ Node* MakeGap(int gap_length) {
   Node* ret = new Node;
   ret->id_ = -gap_length;
   ret->rc_ = ret;
+  ret->str_ = string(gap_length, 'N');
   return ret;
 }

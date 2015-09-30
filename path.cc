@@ -82,7 +82,7 @@ string Path::ToString(bool with_endings) const {
     assert((int) nodes_[0]->str_.size() > nodes_[0]->graph_->k_ - 1);
     ret = ReverseSeq(nodes_[0]->rc_->str_).substr(0, nodes_[0]->graph_->k_ - 1);
   }
-  for (auto &n: nodes_) {
+  for (auto &n: nodes_) {    
     ret += n->str_;
   }
   return ret;
