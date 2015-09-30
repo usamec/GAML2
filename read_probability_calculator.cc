@@ -17,7 +17,8 @@ double SingleReadProbabilityCalculator::GetPathsProbability(
 void SingleReadProbabilityCalculator::EvalProbabilityChange(
     ProbabilityChange& prob_change) {
   for (auto &p: prob_change.added_paths) {
-    prob_change.added_alignments = path_aligner_.GetAlignmentsForPath(p); 
+    auto als = path_aligner_.GetAlignmentsForPath(p);
+    prob_change.added_alignments.insert(prob_change.added_alignments.end(), als.begin(), als.end()); 
   }
   sort(prob_change.added_alignments.begin(), prob_change.added_alignments.end());
 }
