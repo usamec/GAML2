@@ -37,6 +37,13 @@ add_test(UtilTest util_test)
 add_library(path_aligner path_aligner.cc)
 target_link_libraries(path_aligner path read_set graph)
 
+add_library(read_probability_calculator read_probability_calculator.cc)
+target_link_libraries(read_probability_calculator path_aligner)
+
+add_executable(read_probability_calculator_test read_probability_calculator_test.cc)
+target_link_libraries(read_probability_calculator_test read_probability_calculator ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(ReadProbabilityCalculatorTest read_probability_calculator_test)
+
 add_executable(gaml gaml_main.cc)
-target_link_libraries(gaml graph path)
+target_link_libraries(gaml graph path read_probability_calculator)
 

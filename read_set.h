@@ -40,6 +40,10 @@ struct ReadAlignment {
   bool reversed;
 };
 
+inline bool operator<(const ReadAlignment& a, const ReadAlignment& b) {
+  return a.read_id < b.read_id;
+}
+
 class StandardReadIndex {
  public:
   StandardReadIndex(int k = 13): k_(k) {}
