@@ -33,16 +33,16 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   double accumulated_prob = 0;
   for (auto &a: prob_change.added_alignments) {
     if (a.read_id != last_read_id && last_read_id != -47) {
-      new_prob -= read_probs_[last_read_id];
-      new_prob += log(accumulated_prob);
+      new_prob -= read_probs_[last_read_id] / read_set_->size();
+      new_prob += log(accumulated_prob) / read_set_->size();
       accumulated_prob = 0;
     }
     accumulated_prob += GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size());
     last_read_id = a.read_id;
   }
   if (last_read_id != -47) {
-    new_prob -= read_probs_[last_read_id];
-    new_prob += log(accumulated_prob);
+    new_prob -= read_probs_[last_read_id] / read_set_->size();
+    new_prob += log(accumulated_prob) / read_set_->size();
   }
   return new_prob;
 }
@@ -60,7 +60,7 @@ double SingleReadProbabilityCalculator::InitTotalLogProb() {
   double ret = 0;
   for (size_t i = 0; i < read_set_->size(); i++) {
     read_probs_[i] = GetMinLogProbability((*read_set_)[i].size());
-    ret += read_probs_[i];
+    ret += read_probs_[i] / read_set_->size();
   }
   return ret;
 }
