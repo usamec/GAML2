@@ -16,10 +16,14 @@ double SingleReadProbabilityCalculator::GetPathsProbability(
 
 void SingleReadProbabilityCalculator::EvalProbabilityChange(
     ProbabilityChange& prob_change) {
-  for (auto &p: prob_change.added_paths) {
+  for (size_t i = 0; i < prob_change.added_paths.size(); i++) {
+    auto &p = prob_change.added_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.added_alignments.insert(prob_change.added_alignments.end(), als.begin(), als.end()); 
+    printf("\rdone %d/%d evals", (int) i+1, (int) prob_change.added_paths.size()); 
+    fflush(stdout);
   }
+  printf("\n");
   sort(prob_change.added_alignments.begin(), prob_change.added_alignments.end());
 }
 
@@ -31,7 +35,8 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
 
   int last_read_id = -47;
   double accumulated_prob = 0;
-  for (auto &a: prob_change.added_alignments) {
+  for (size_t i = 0; i < prob_change.added_alignments.size(); i++) {
+    auto &a = prob_change.added_alignments[i];
     if (a.read_id != last_read_id && last_read_id != -47) {
       new_prob -= read_probs_[last_read_id] / read_set_->size();
       new_prob += log(accumulated_prob) / read_set_->size();

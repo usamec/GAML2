@@ -56,15 +56,35 @@ class StandardReadIndex {
   unordered_map<string, vector<pair<int,int>>> index_;
 };
 
-template<class TIndex=StandardReadIndex>
+class RandomIndex {
+ public:
+  RandomIndex(int k = 13): k_(k) {}
+  void AddRead(int id, const string& data);
+
+  vector<CandidateReadPosition> GetReadCandidates(const string& genome) const;
+
+  int k_;
+  // (read_id, pos_in_read)
+  unordered_map<string, vector<pair<int,int>>> index_; 
+};
+
+template<class TIndex=RandomIndex>
 class ReadSet {
   class VisitedPositions {
-   vector<vector<vector<int>>> vp_;
+   vector<vector<int>> vp_;
+   int offset_;
+   int offset2_;
+   int cur_iter_;
    public:
-    void Prepare(int max_err, int read_size);
+    VisitedPositions() : cur_iter_(0) {}
+    void Prepare(int offset, int read_size);
     
-    bool IsVisited(pair<int, pair<int, int>> pos) const;
-    void Add(pair<int, pair<int, int>> pos);
+    bool IsVisited(pair<int, pair<int, int>> pos) const {
+      return vp_[pos.second.first + 10][pos.second.second - offset_ + offset2_ + 10] == cur_iter_;
+    }
+    void Add(pair<int, pair<int, int>> pos) {
+      vp_[pos.second.first + 10][pos.second.second - offset_ + offset2_ + 10] = cur_iter_;
+    }
   };
 
  public:

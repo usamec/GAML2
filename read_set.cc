@@ -32,6 +32,35 @@ vector<CandidateReadPosition> StandardReadIndex::GetReadCandidates(const string&
   return ret;
 }
 
+void RandomIndex::AddRead(int id, const string& data) {
+  if ((int) data.size() < k_) return;
+  for (int i = 0; i < 3; i++) {
+    int p = rand()%(data.size() - k_ + 1);
+    index_[data.substr(p, k_)].push_back(make_pair(id, p));
+  }
+}
+
+vector<CandidateReadPosition> RandomIndex::GetReadCandidates(const string& genome) const {
+  //read_id, diagonal / 5
+  static unordered_set<pair<int, int>> found_cands;
+  found_cands.clear();
+  vector<CandidateReadPosition> ret;
+
+  for (size_t i = 0; i + k_ <= genome.size(); i++) {
+    auto it = index_.find(genome.substr(i, k_));
+    if (it == index_.end()) continue;
+    for (auto &e: it->second) {
+      int coord = (i - e.second) / 5;
+      if (found_cands.count(make_pair(e.first, coord))) {
+        continue;
+      }
+      found_cands.insert(make_pair(e.first, coord));
+      ret.push_back(CandidateReadPosition(e.first, i, e.second));
+    }
+  }
+  return ret;
+}
+
 template<class TIndex>
 void ReadSet<TIndex>::LoadReadSet(istream& is) {
   string l1, l2, l3, l4;
@@ -43,7 +72,12 @@ void ReadSet<TIndex>::LoadReadSet(istream& is) {
     reads_.push_back(l2);
     index_.AddRead(id, l2);
     id++;
+    if (id % 10000 == 0) {
+      printf("\rLoaded %d reads", id);
+      fflush(stdout);
+    }
   }
+  printf("\n");
 }
 
 template<class TIndex>
@@ -92,32 +126,17 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
 }
 
 template<class TIndex>
-void ReadSet<TIndex>::VisitedPositions::Prepare(int max_err, int read_size) {
-  vp_.resize(max_err + 2);
-  for (auto &x: vp_) {
-    x.resize(read_size+2);
-    for (auto &y: x) {
-      y.clear();
+void ReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_size) {
+  if (read_size * 2 + 40 > vp_.size()) {
+    vp_.resize(read_size * 2 + 40);
+    for (auto &x: vp_) {
+      x.resize(read_size * 2 + 40);
     }
   }
+  offset_ = offset;
+  offset2_ = read_size;
+  cur_iter_++;
 }
-
-
-template<class TIndex>
-bool ReadSet<TIndex>::VisitedPositions::IsVisited(
-    pair<int, pair<int, int>> pos) const {
-  pos.second.first += 1;
-  return find(vp_[pos.first][pos.second.first].begin(),
-              vp_[pos.first][pos.second.first].end(),
-              pos.second.second) != vp_[pos.first][pos.second.first].end();
-}
-
-template<class TIndex>
-void ReadSet<TIndex>::VisitedPositions::Add(pair<int, pair<int, int>> pos) {
-  pos.second.first += 1;
-  vp_[pos.first][pos.second.first].push_back(pos.second.second);
-}
-
 
 template<class TIndex>
 bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
@@ -132,7 +151,7 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
   auto& read = reads_[candidate.read_id];
   int total_errs = 0;
 
-  visited_positions.Prepare(max_err, read.size());
+  visited_positions.Prepare(candidate.genome_pos, read.size());
 
   // distance, (read_pos, genome_pos)
   static deque<pair<int, pair<int, int>>> fr;
@@ -142,9 +161,6 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
   while (!fr.empty()) {
     auto x = fr.front();
     fr.pop_front();
-
-    if (visited_positions.IsVisited(x)) continue;
-    visited_positions.Add(x);
 
     if (x.second.first == read.size()) {
       total_errs = x.first;
@@ -158,18 +174,38 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
     if (x.second.second < genome.size()) {
       // match / mismatch
       if (genome[x.second.second] == read[x.second.first]) {
-        fr.push_front(make_pair(x.first, make_pair(x.second.first+1, x.second.second+1)));
+        auto nx = make_pair(x.first, make_pair(x.second.first+1, x.second.second+1));
+        fr.push_front(nx);
+        visited_positions.Add(nx);
         // if matches we greedily continue
         continue;
       }
       // mismatch
-      fr.push_back(make_pair(x.first+1, make_pair(x.second.first+1, x.second.second+1)));
+      {
+        auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second+1));
+        if (!visited_positions.IsVisited(nx)) {
+          fr.push_back(nx);
+          visited_positions.Add(nx);
+        }
+      }
 
       // delete from genome
-      fr.push_back(make_pair(x.first+1, make_pair(x.second.first, x.second.second+1)));
+      {
+        auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second+1));
+        if (!visited_positions.IsVisited(nx)) {
+          fr.push_back(nx);
+          visited_positions.Add(nx);
+        }
+      }
     }
     // insert to genome
-    fr.push_back(make_pair(x.first+1, make_pair(x.second.first+1, x.second.second)));
+    {
+      auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second));
+      if (!visited_positions.IsVisited(nx)) {
+        fr.push_back(nx);
+        visited_positions.Add(nx);
+      }
+    }
   }
 
   max_err -= total_errs;
@@ -179,9 +215,6 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
   while (!fr.empty()) {
     auto x = fr.front();
     fr.pop_front();
-
-    if (visited_positions.IsVisited(x)) continue;
-    visited_positions.Add(x);
 
     if (x.second.first == -1) {
       al.read_id = candidate.read_id; 
@@ -197,20 +230,41 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
     if (x.second.second >= 0) {
       // match / mismatch
       if (genome[x.second.second] == read[x.second.first]) {
-        fr.push_front(make_pair(x.first, make_pair(x.second.first-1, x.second.second-1)));
+        auto nx = make_pair(x.first, make_pair(x.second.first-1, x.second.second-1));
+        fr.push_front(nx);
+        visited_positions.Add(nx);
         // if matches we greedily continue
         continue;
       }
       // mismatch
-      fr.push_back(make_pair(x.first+1, make_pair(x.second.first-1, x.second.second-1)));
+      {
+        auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second-1));
+        if (!visited_positions.IsVisited(nx)) {
+          fr.push_back(nx);
+          visited_positions.Add(nx);
+        }
+      }
 
       // delete from genome
-      fr.push_back(make_pair(x.first+1, make_pair(x.second.first, x.second.second-1)));
+      {
+        auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second-1));
+        if (!visited_positions.IsVisited(nx)) {
+          fr.push_back(nx);
+          visited_positions.Add(nx);
+        }
+      }
     }
     // insert to genome
-    fr.push_back(make_pair(x.first+1, make_pair(x.second.first-1, x.second.second)));
+    {
+      auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second));
+      if (!visited_positions.IsVisited(nx)) {
+        fr.push_back(nx);
+        visited_positions.Add(nx);
+      }
+    }
   }
   return false;
 }
 
 template class ReadSet<StandardReadIndex>;
+template class ReadSet<RandomIndex>;
