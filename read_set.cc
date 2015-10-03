@@ -13,7 +13,8 @@ void StandardReadIndex::AddRead(int id, const string& data) {
 
 vector<CandidateReadPosition> StandardReadIndex::GetReadCandidates(const string& genome) const {
   //read_id, diagonal / 5
-  unordered_set<pair<int, int>> found_cands;
+  static unordered_set<pair<int, int>> found_cands;
+  found_cands.clear();
   vector<CandidateReadPosition> ret;
 
   for (size_t i = 0; i + k_ <= genome.size(); i++) {
@@ -107,8 +108,8 @@ bool ReadSet<TIndex>::VisitedPositions::IsVisited(
     pair<int, pair<int, int>> pos) const {
   pos.second.first += 1;
   return find(vp_[pos.first][pos.second.first].begin(),
-           vp_[pos.first][pos.second.first].end(),
-           pos.second.second) != vp_[pos.first][pos.second.first].end();
+              vp_[pos.first][pos.second.first].end(),
+              pos.second.second) != vp_[pos.first][pos.second.first].end();
 }
 
 template<class TIndex>
