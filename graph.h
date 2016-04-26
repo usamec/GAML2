@@ -10,6 +10,9 @@ class Graph {
 
   vector<Node*> GetBigNodes(int threshold) const;
 
+  vector<Node*> ReachForwardWithThreshold(Node* start, int threshold) const;
+  vector<Node*> ReachLocalWithThreshold(Node* start, int threshold) const;
+
   vector<Node*> nodes_;
   int k_;
 };

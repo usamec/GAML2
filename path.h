@@ -34,4 +34,6 @@ vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);
 
 string PathsToDebugString(const vector<Path>& paths);
 
+void PathsToFasta(const vector<Path>& paths, ostream &of);
+
 #endif 

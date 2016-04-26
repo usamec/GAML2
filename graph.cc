@@ -1,5 +1,7 @@
 #include "graph.h"
 #include <boost/algorithm/string.hpp>
+#include <queue>
+#include <unordered_set>
 
 using boost::is_any_of;
 using boost::split;
@@ -67,5 +69,69 @@ vector<Node*> Graph::GetBigNodes(int threshold) const {
       ret.push_back(nodes_[i]);
     }
   }
+  return ret;
+}
+
+vector<Node*> Graph::ReachForwardWithThreshold(Node* start, int threshold) const {
+  unordered_set<int> visited;
+  queue<Node*> fr;
+  fr.push(start);
+  visited.insert(start->id_);
+  vector<Node*> ret;
+
+  while (!fr.empty()) {
+    Node *x = fr.front();
+    fr.pop();
+    ret.push_back(x);
+    for (auto &nx: x->next_) {
+      if (nx->IsBig(threshold)) {
+        continue;
+      }
+      if (visited.count(nx->id_)) {
+        continue;
+      }
+      visited.insert(nx->id_);
+      fr.push(nx);
+    }
+  }
+
+  return ret;
+}
+
+vector<Node*> Graph::ReachLocalWithThreshold(Node* start, int threshold) const {
+  unordered_set<int> visited;
+  queue<Node*> fr;
+  fr.push(start);
+  visited.insert(start->id_);
+  vector<Node*> ret;
+
+  while (!fr.empty()) {
+    Node *x = fr.front();
+    fr.pop();
+    ret.push_back(x);
+    for (auto &nx: x->next_) {
+      if (nx->IsBig(threshold)) {
+        continue;
+      }
+      if (visited.count(nx->id_)) {
+        continue;
+      }
+      visited.insert(nx->id_);
+      fr.push(nx);
+    }
+    for (auto &nxr: x->rc_->next_) {
+      auto &nx = nxr->rc_;
+      if (nx->IsBig(threshold)) {
+        continue;
+      }
+      if (visited.count(nx->id_)) {
+        continue;
+      }
+      visited.insert(nx->id_);
+      fr.push(nx);
+
+    }
+  }
+
   return ret;
 }

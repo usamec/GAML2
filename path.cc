@@ -87,3 +87,10 @@ string Path::ToString(bool with_endings) const {
   }
   return ret;
 }
+
+void PathsToFasta(const vector<Path>& paths, ostream &of) {
+  for (auto &p: paths) {
+    of << ">" << p.ToDebugString() << endl;
+    of << p.ToString(true) << endl;
+  }
+}

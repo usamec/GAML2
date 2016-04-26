@@ -44,6 +44,9 @@ add_executable(read_probability_calculator_test read_probability_calculator_test
 target_link_libraries(read_probability_calculator_test read_probability_calculator ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(ReadProbabilityCalculatorTest read_probability_calculator_test)
 
+add_executable(get_subgraph get_subgraph.cc)
+target_link_libraries(get_subgraph graph)
+
 add_executable(gaml gaml_main.cc)
 target_link_libraries(gaml graph path read_probability_calculator)
 

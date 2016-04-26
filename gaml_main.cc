@@ -22,4 +22,7 @@ int main(int argc, char** argv) {
   SingleReadProbabilityCalculator pc(&rs, 0.01, -10, -0.7, 0, 0);
   ProbabilityChange prob_change;
   cout << pc.GetPathsProbability(paths, prob_change) << endl;
+
+  ofstream of(argv[3]);
+  PathsToFasta(paths, of);
 }
