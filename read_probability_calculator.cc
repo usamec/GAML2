@@ -27,7 +27,7 @@ void SingleReadProbabilityCalculator::EvalProbabilityChange(
 }
 
 double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
-    const ProbabilityChange& prob_change) {
+    const ProbabilityChange& prob_change, bool write) {
   double new_prob = total_log_prob_;
   new_prob += log(old_paths_length_);
   new_prob -= log(prob_change.new_paths_length);
@@ -44,6 +44,7 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
     if (ch.first != last_read_id && last_read_id != -47) {
       new_prob -= GetRealReadProbability(read_probs_[last_read_id], last_read_id) / read_set_->size();
       new_prob += GetRealReadProbability(read_probs_[last_read_id] + accumulated_prob, last_read_id) / read_set_->size();
+      read_probs_[last_read_id] += accumulated_prob;
       accumulated_prob = 0;
     }
     accumulated_prob += ch.second;
@@ -52,7 +53,11 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   if (last_read_id != -47) {
     new_prob -= GetRealReadProbability(read_probs_[last_read_id], last_read_id) / read_set_->size();
     new_prob += GetRealReadProbability(read_probs_[last_read_id] + accumulated_prob, last_read_id) / read_set_->size();
+    if (write) {
+      read_probs_[last_read_id] += accumulated_prob;
+    }
   }
+  if (write) total_log_prob_ = new_prob;
   return new_prob;
 }
 
@@ -63,6 +68,7 @@ double SingleReadProbabilityCalculator::GetAlignmentProb(
 
 void SingleReadProbabilityCalculator::ApplyProbabilityChange(
     const ProbabilityChange& prob_change) {
+  EvalTotalProbabilityFromChange(prob_change, true); 
 }
 
 double SingleReadProbabilityCalculator::InitTotalLogProb() {

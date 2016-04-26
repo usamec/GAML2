@@ -27,7 +27,13 @@ class Path {
 
   string ToDebugString() const;
 
-  string ToString(bool with_endings=false) const; 
+  string ToString(bool with_endings=false) const;
+
+  bool IsSame(const Path& p) const;
+
+  bool operator==(const Path &p) const {
+    return nodes_ == p.nodes_;
+  }
 };
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);
@@ -36,4 +42,8 @@ string PathsToDebugString(const vector<Path>& paths);
 
 void PathsToFasta(const vector<Path>& paths, ostream &of);
 
+void ComparePathSets(const vector<Path>& a,
+                     const vector<Path>& b,
+                     vector<Path>& added,
+                     vector<Path>& removed);
 #endif 

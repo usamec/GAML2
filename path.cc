@@ -88,9 +88,50 @@ string Path::ToString(bool with_endings) const {
   return ret;
 }
 
+bool Path::IsSame(const Path& p) const {
+  if (p.nodes_.size() != nodes_.size()) return false;
+  if (p.nodes_ == nodes_) return true;
+  for (size_t i = 0; i < nodes_.size(); i++) {
+    if (nodes_[i]->rc_ != p.nodes_[nodes_.size() - 1 - i]) return false;
+  }
+  return true;
+}
+
 void PathsToFasta(const vector<Path>& paths, ostream &of) {
   for (auto &p: paths) {
     of << ">" << p.ToDebugString() << endl;
     of << p.ToString(true) << endl;
   }
 }
+
+void ComparePathSets(const vector<Path>& a,
+                     const vector<Path>& b,
+                     vector<Path>& added,
+                     vector<Path>& removed) {
+  for (auto &pb: b) {
+    bool found = false;
+    for (auto &pa: a) {
+      if (pa.IsSame(pb)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      added.push_back(pb);
+    }
+  }
+  for (auto &pa: a) {
+    bool found = false;
+    for (auto &pb: b) {
+      if (pa.IsSame(pb)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      removed.push_back(pa);
+    }
+  }
+}
+
+

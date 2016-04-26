@@ -46,7 +46,7 @@ class SingleReadProbabilityCalculator {
   void EvalProbabilityChange(ProbabilityChange& prob_change);
 
   // Get total probability from change and cached data
-  double EvalTotalProbabilityFromChange(const ProbabilityChange& prob_change);
+  double EvalTotalProbabilityFromChange(const ProbabilityChange& prob_change, bool write=false);
 
   int GetPathsLength(const vector<Path>& paths) const;
 
@@ -63,6 +63,7 @@ class SingleReadProbabilityCalculator {
   vector<double> read_probs_;
   double total_log_prob_;
   int old_paths_length_;
+  vector<Path> old_paths_;
 };
 
 #endif

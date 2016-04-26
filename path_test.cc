@@ -188,3 +188,123 @@ TEST(PathTest, PathToStringTest2) {
             + string(50, 'N') + "AGAC",
             str_out2);
 }
+
+TEST(PathTest, IsSamePathTest1) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({b});
+  EXPECT_EQ(false, p.IsSame(p2));
+  EXPECT_EQ(false, p2.IsSame(p));
+}
+
+TEST(PathTest, IsSamePathTest2) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({c, a});
+  EXPECT_EQ(false, p.IsSame(p2));
+  EXPECT_EQ(false, p2.IsSame(p));
+}
+
+TEST(PathTest, IsSamePathTest3) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({a, c});
+  EXPECT_EQ(true, p.IsSame(p2));
+  EXPECT_EQ(true, p2.IsSame(p));
+}
+
+TEST(PathTest, IsSamePathTest4) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({d, b});
+  EXPECT_EQ(true, p.IsSame(p2));
+  EXPECT_EQ(true, p2.IsSame(p));
+}
+
+TEST(PathTest, IsSamePathTest5) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({b, d});
+  EXPECT_EQ(false, p.IsSame(p2));
+  EXPECT_EQ(false, p2.IsSame(p));
+}
+
+TEST(PathTest, ComparePathSetsTest) {
+  Node* a = new Node;
+  a->id_ = 1;
+  Node* b = new Node;
+  b->id_ = 2;
+  a->rc_ = b;
+  b->rc_ = a;
+  Node* c = new Node;
+  c->id_ = 3;
+  Node* d = new Node;
+  d->id_ = 4;
+  c->rc_ = d;
+  d->rc_ = c;
+  Path p({a, c});
+  Path p2({b, d});
+  Path p3({a, c});
+  Path p4({b, d, a});
+  vector<Path> ps1({p, p2});
+  vector<Path> ps2({p3, p4});
+  vector<Path> added, removed;
+  ComparePathSets(ps1, ps2, added, removed);
+  EXPECT_EQ(vector<Path>({p4}), added);
+  EXPECT_EQ(vector<Path>({p2}), removed);
+}
