@@ -26,15 +26,21 @@ class SingleReadProbabilityCalculator {
     total_log_prob_ = InitTotalLogProb();
   }
 
+  // Call this first
   double GetPathsProbability(
       const vector<Path>& paths, ProbabilityChange& prob_change);
 
+  // Call this after you are happy with current result (i.e. you got better
+  // probability)
   void ApplyProbabilityChange(const ProbabilityChange& prob_change);
 
  private:
   double InitTotalLogProb();
 
   double GetMinLogProbability(int read_length) const;
+
+  // max(min_prob, prob)
+  double GetRealReadProbability(double prob, int read_id) const;
 
   // Evals change with filled added and removed paths
   void EvalProbabilityChange(ProbabilityChange& prob_change);
