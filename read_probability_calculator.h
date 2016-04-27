@@ -5,10 +5,14 @@
 
 struct ProbabilityChange {
   vector<Path> added_paths;
+  vector<Path> removed_paths;
 
   vector<ReadAlignment> added_alignments;
+  vector<ReadAlignment> removed_alignments;
 
   int new_paths_length;
+
+  vector<Path> new_paths;
 };
 
 class SingleReadProbabilityCalculator {

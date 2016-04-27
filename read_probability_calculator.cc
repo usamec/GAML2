@@ -5,9 +5,13 @@
 double SingleReadProbabilityCalculator::GetPathsProbability(
     const vector<Path>& paths, ProbabilityChange& prob_change) {
   prob_change.added_paths.clear();
-  prob_change.added_paths = paths;
+  prob_change.removed_paths.clear();
+  prob_change.added_alignments.clear();
+  prob_change.removed_alignments.clear();
+  ComparePathSets(old_paths_, paths, prob_change.added_paths, prob_change.removed_paths);
 
   prob_change.new_paths_length = GetPathsLength(paths);
+  prob_change.new_paths = paths;
 
   EvalProbabilityChange(prob_change);
 
@@ -23,6 +27,13 @@ void SingleReadProbabilityCalculator::EvalProbabilityChange(
     printf("\rdone %d/%d evals", (int) i+1, (int) prob_change.added_paths.size()); 
     fflush(stdout);
   }
+  for (size_t i = 0; i < prob_change.removed_paths.size(); i++) {
+    auto &p = prob_change.removed_paths[i];
+    auto als = path_aligner_.GetAlignmentsForPath(p);
+    prob_change.removed_alignments.insert(prob_change.removed_alignments.end(), als.begin(), als.end()); 
+    printf("\rdone %d/%d evals", (int) i+1, (int) prob_change.removed_paths.size()); 
+    fflush(stdout);
+  }
   printf("\n");
 }
 
@@ -36,6 +47,9 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   vector<pair<int, double>> changes;
   for (auto &a: prob_change.added_alignments) {
     changes.push_back(make_pair(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+  }
+  for (auto &a: prob_change.removed_alignments) {
+    changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
   }
   sort(changes.begin(), changes.end());
   int last_read_id = -47;
@@ -68,7 +82,9 @@ double SingleReadProbabilityCalculator::GetAlignmentProb(
 
 void SingleReadProbabilityCalculator::ApplyProbabilityChange(
     const ProbabilityChange& prob_change) {
-  EvalTotalProbabilityFromChange(prob_change, true); 
+  EvalTotalProbabilityFromChange(prob_change, true);
+  old_paths_ = prob_change.new_paths;
+  old_paths_length_ = prob_change.new_paths_length; 
 }
 
 double SingleReadProbabilityCalculator::InitTotalLogProb() {
@@ -85,7 +101,7 @@ double SingleReadProbabilityCalculator::GetMinLogProbability(int read_length) co
 }
 
 double SingleReadProbabilityCalculator::GetRealReadProbability(double prob, int read_id) const {
-  return max(log(prob), GetMinLogProbability((*read_set_)[read_id].size()));
+  return max(log(max(0.0, prob)), GetMinLogProbability((*read_set_)[read_id].size()));
 }
 
 int SingleReadProbabilityCalculator::GetPathsLength(const vector<Path>& paths) const {
