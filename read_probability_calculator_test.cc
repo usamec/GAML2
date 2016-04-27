@@ -212,3 +212,43 @@ TEST(SingleReadProbabilityCalculator, Test6) {
   pr2 = rp.GetPathsProbability(vector<Path>({p2}), prob_change);
   EXPECT_FLOAT_EQ(-5.2210155, pr2);
 }
+
+TEST(SingleReadProbabilityCalculator, Test7) {
+  string part1 = "";
+  char alph[] = "ACGT";
+  for (int i = 0; i < 50; i++) {
+    part1 += alph[rand()%4];
+  }
+  stringstream ss;
+  ss << "2\t1000\t41\t1\n";
+  ss << "NODE\t1\t180\t0\t0\n";
+  ss << part1 + string(40, 'C') + part1 + string(40, 'A') << endl;
+  ss << ReverseSeq(part1) + string(40, 'G') + ReverseSeq(part1) + string(40, 'A') << endl;
+  ss << "NODE\t2\t4\t0\t0\n";
+  ss << "AGAC\n";
+  ss << "TGCC\n";
+  ss << "ARC\t1\t2\t44\n";
+
+  Graph *g = LoadGraph(ss);
+
+  Path p1({g->nodes_[0]});
+
+  stringstream ss2;
+  ss2 << "@a" << endl;
+  ss2 << part1 << endl;
+  ss2 << "+" << endl;
+  ss2 << part1 << endl;
+
+  ReadSet<> rs;
+  rs.LoadReadSet(ss2);
+
+  SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
+  ProbabilityChange prob_change;
+  double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
+  EXPECT_FLOAT_EQ(-5.202997, pr1);
+  rp.ApplyProbabilityChange(prob_change);
+  Path p2({g->nodes_[2]});
+  p1.AppendPathWithGap(p2, 100);
+  double pr2 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
+  EXPECT_FLOAT_EQ(-5.5901132, pr2);
+}
