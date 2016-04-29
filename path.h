@@ -34,6 +34,8 @@ class Path {
   bool operator==(const Path &p) const {
     return nodes_ == p.nodes_;
   }
+
+  bool ExtendRandomly(int big_node_threshold, int step_threshold, int distance_threshold);
 };
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);

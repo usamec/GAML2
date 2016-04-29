@@ -97,6 +97,23 @@ bool Path::IsSame(const Path& p) const {
   return true;
 }
 
+bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distance_threshold) {
+  int added_distance = 0;
+  int added_steps = 0;
+  do {
+    Node* last_node = nodes_.back();
+    if (last_node->next_.size() == 0) return false;
+    Node* next_node = last_node->next_[rand()%last_node->next_.size()];
+    nodes_.push_back(next_node);
+    if ((int)next_node->str_.size() >= big_node_threshold) {
+      return true;
+    }
+    added_steps += 1;
+    added_distance += next_node->str_.size();
+  } while (added_distance <= distance_threshold && added_steps <= step_threshold);
+  return false;
+}
+
 void PathsToFasta(const vector<Path>& paths, ostream &of) {
   for (auto &p: paths) {
     of << ">" << p.ToDebugString() << endl;
@@ -133,5 +150,3 @@ void ComparePathSets(const vector<Path>& a,
     }
   }
 }
-
-

@@ -308,3 +308,51 @@ TEST(PathTest, ComparePathSetsTest) {
   EXPECT_EQ(vector<Path>({p4}), added);
   EXPECT_EQ(vector<Path>({p2}), removed);
 }
+
+TEST(PathText, ExtendRandomTest) {
+  Node* a = new Node;
+  a->id_ = 1;
+  a->str_ = string("AAAAA");
+  Node* b = new Node;
+  b->id_ = 2;
+  b->str_ = string("TTTTT");
+  a->next_.push_back(b);
+  Path p({a, b});
+  bool ret = p.ExtendRandomly(3, 3, 3);
+  EXPECT_EQ(false, ret);
+  EXPECT_EQ(2, p.size());
+
+  Path p2({a});
+  ret = p2.ExtendRandomly(3, 0, 0);
+  EXPECT_EQ(true, ret);
+  EXPECT_EQ(2, p2.size());
+  EXPECT_EQ(b, p2[1]);
+}
+
+TEST(PathText, ExtendRandomTest2) {
+  Node* a = new Node;
+  a->id_ = 1;
+  a->str_ = string("AAAAA");
+  Node* b = new Node;
+  b->id_ = 2;
+  b->str_ = string("TTT");
+  a->next_.push_back(b);
+  Node* c = new Node;
+  c->id_ = 3;
+  c->str_ = string("TTTTT");
+  b->next_.push_back(c);
+
+  Path p({a});
+  bool ret = p.ExtendRandomly(5, 3, 3);
+  EXPECT_EQ(true, ret);
+  EXPECT_EQ(3, p.size());
+  EXPECT_EQ(b, p[1]);
+  EXPECT_EQ(c, p[2]);
+
+  Path p2({a});
+  ret = p2.ExtendRandomly(5, 0, 3);
+  EXPECT_EQ(false, ret);
+  Path p3({a});
+  ret = p3.ExtendRandomly(5, 3, 2);
+  EXPECT_EQ(false, ret);
+}
