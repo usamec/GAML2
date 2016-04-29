@@ -40,6 +40,9 @@ class Path {
   }
 
   bool ExtendRandomly(int big_node_threshold, int step_threshold, int distance_threshold);
+
+  // Split path into <0, pos) and <pos, ...) and removes small nodes from ends
+  Path CutAt(int pos, int big_node_threshold);
 };
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes);

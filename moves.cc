@@ -47,6 +47,19 @@ bool ExtendPathsRandomly(const vector<Path>& paths, vector<Path>& out_paths,
   return true;
 }
 
+bool BreakPaths(const vector<Path>& paths, vector<Path>& out_paths,
+                const MoveConfig& config) {
+  int pi = rand()%paths.size();
+  out_paths = paths;
+  if (out_paths[pi].size() < 2) {
+    return false;
+  }
+  int break_pos = 1+rand()%(out_paths[pi].size()-1);
+  Path p2 = out_paths[pi].CutAt(break_pos, config.big_node_threshold);
+  out_paths.push_back(p2);
+  return true;
+}
+
 void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config) {
   while (true) {
     out_paths.clear();
@@ -55,9 +68,12 @@ void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConf
 }
 
 bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config) {
-  int move = rand()%1;
+  int move = rand()%2;
   if (move == 0) {
     return ExtendPathsRandomly(paths, out_paths, config);
+  }
+  if (move == 1) {
+    return BreakPaths(paths, out_paths, config);
   }
   return false;
 }

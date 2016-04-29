@@ -114,6 +114,16 @@ bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distan
   return false;
 }
 
+Path Path::CutAt(int pos, int big_node_threshold) {
+  int part1_end = pos - 1;
+  while (!nodes_[part1_end]->IsBig(big_node_threshold)) part1_end--;
+  int part2_start = pos;
+  while (!nodes_[part2_start]->IsBig(big_node_threshold)) part2_start++;
+  Path p2(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()));
+  nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + part1_end + 1);
+  return p2;
+}
+
 void PathsToFasta(const vector<Path>& paths, ostream &of) {
   for (auto &p: paths) {
     of << ">" << p.ToDebugString() << endl;
