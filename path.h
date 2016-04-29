@@ -17,10 +17,14 @@ class Path {
     return nodes_.size();
   }
 
+  Node*& back() {
+    return nodes_.back();
+  }
+
   bool CheckPath() const;
 
-  void AppendPath(const Path& p);
-  void AppendPathWithGap(const Path &p, int gap_length);
+  void AppendPath(const Path& p, int p_start=0);
+  void AppendPathWithGap(const Path &p, int gap_length, int p_start=0);
 
   void Reverse();
   Path GetReverse();

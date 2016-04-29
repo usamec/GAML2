@@ -49,13 +49,13 @@ string PathsToDebugString(const vector<Path>& paths) {
   return ret.str();
 }
 
-void Path::AppendPath(const Path& p) {
-  nodes_.insert(nodes_.end(), p.nodes_.begin(), p.nodes_.end());
+void Path::AppendPath(const Path& p, int p_start) {
+  nodes_.insert(nodes_.end(), p.nodes_.begin() + p_start, p.nodes_.end());
 }
 
-void Path::AppendPathWithGap(const Path& p, int gap_length) {
+void Path::AppendPathWithGap(const Path& p, int gap_length, int p_start) {
   nodes_.push_back(MakeGap(gap_length));
-  nodes_.insert(nodes_.end(), p.nodes_.begin(), p.nodes_.end());
+  nodes_.insert(nodes_.end(), p.nodes_.begin() + p_start, p.nodes_.end());
 }
 
 void Path::Reverse() {

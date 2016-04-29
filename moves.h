@@ -3,7 +3,20 @@
 
 #include "path.h"
 
-void MakeMove(const vector<Path>& paths, vector<Path>& out_paths);
-bool TryMove(const vector<Path>& paths, vector<Path>& out_paths);
+class MoveConfig {
+ public:
+  int big_node_threshold;
+  int rand_extend_step_threshold;
+  int rand_extend_distance_threshold;
+
+  MoveConfig() :
+    big_node_threshold(500),
+    rand_extend_step_threshold(50),
+    rand_extend_distance_threshold(1000)
+    {}
+};
+
+void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config);
+bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config);
 
 #endif

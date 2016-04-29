@@ -37,6 +37,13 @@ add_test(UtilTest util_test)
 add_library(path_aligner path_aligner.cc)
 target_link_libraries(path_aligner path read_set graph)
 
+add_library(moves moves.cc)
+target_link_libraries(moves path)
+
+add_executable(moves_test moves_test.cc)
+target_link_libraries(moves_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} moves)
+add_test(MovesTest moves_test)
+
 add_library(read_probability_calculator read_probability_calculator.cc)
 target_link_libraries(read_probability_calculator path_aligner)
 
@@ -48,5 +55,5 @@ add_executable(get_subgraph get_subgraph.cc)
 target_link_libraries(get_subgraph graph)
 
 add_executable(gaml gaml_main.cc)
-target_link_libraries(gaml graph path read_probability_calculator)
+target_link_libraries(gaml graph path read_probability_calculator moves)
 
