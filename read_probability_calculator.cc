@@ -58,7 +58,9 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
     if (ch.first != last_read_id && last_read_id != -47) {
       new_prob -= GetRealReadProbability(read_probs_[last_read_id], last_read_id) / read_set_->size();
       new_prob += GetRealReadProbability(read_probs_[last_read_id] + accumulated_prob, last_read_id) / read_set_->size();
-      read_probs_[last_read_id] += accumulated_prob;
+      if (write) {
+        read_probs_[last_read_id] += accumulated_prob;
+      }
       accumulated_prob = 0;
     }
     accumulated_prob += ch.second;
