@@ -5,6 +5,10 @@ Not complete yet.
 
 To compile:
 
+Install googletest.
+
+Then.
+
 First time:
 
 ```
