@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <tuple>
+#include <set>
 #include "util.h"
 
 TEST(StandardReadIndexTest, GetCandidatesTest) {
@@ -265,4 +266,140 @@ TEST(ReadSetTest, GetAlignmentsTestMoreReads) {
   EXPECT_EQ(62, als[1].genome_pos);
   EXPECT_EQ(1, als[1].read_id);
   EXPECT_EQ(6, als[1].dist);
+}
+
+char GetRandomBase(char otherThan = 'X') {
+  char c = 'A';
+  do {
+    switch (rand() % 4) {
+      case 0: c = 'A'; break;
+      case 1: c = 'C'; break;
+      case 2: c = 'G'; break;
+      case 3: c = 'T'; break;
+    }
+  } while (c == otherThan);
+  return c;
+}
+
+string RemapReverse(const string& sequence) {
+  stringstream resultStream;
+  for (char c : sequence) {
+    switch (c) {
+      case 'A': resultStream << 'T'; break;
+      case 'C': resultStream << 'G'; break;
+      case 'G': resultStream << 'C'; break;
+      case 'T': resultStream << 'A'; break;
+    }
+  }
+  string result = resultStream.str();
+  reverse(result.begin(), result.end());
+  return result;
+}
+
+TEST(ReadSetTest, PacBioTest) {
+  srand(47);
+  
+  const int genomeLength = 10000;
+  const int readLength = 1000;
+  const int numReads = 10;
+  const int readPadding = 400;
+  const int maxAlignmentEndDifference = 100;
+  const int maxDistanceDifference = 40;
+  
+  // error rates (n out of 100)
+  const int insertRate = 4;
+  const int deleteRate = 2;
+  const int substituteRate = 1;
+  
+  // generate genome
+  stringstream genomeStream;
+  for (int i = 0; i < genomeLength; i++) {
+    genomeStream << GetRandomBase();
+  }
+  string genome = genomeStream.str();
+  
+  vector<string> reads; // reads strings
+  vector<int> startPositions; // starting position of valid part of read in the genome
+  vector<bool> areReversed;
+  vector<int> numErrors;
+  
+  stringstream fastqStream;
+  
+  for (int j = 0; j < numReads; j++) {
+    int readPos = rand() % (genomeLength - readLength + 1);
+    
+    stringstream readStream;
+    // add padding
+    for (int i = 0; i < readPadding; i++) {
+      readStream << GetRandomBase();
+    }
+    int errors = 0;
+    // create noisy read
+    for (int i = readPos; i < readPos + readLength; i++) {
+      if (rand() % 100 < insertRate) {
+        readStream << GetRandomBase();
+        i--;
+        errors++;
+      } else if (rand() % 100 < deleteRate) {
+        // nothing to do here
+        errors++;
+      } else if (rand() % 100 < substituteRate) {
+        readStream << GetRandomBase(genome[i]);
+        errors++;
+      } else {
+        readStream << genome[i];
+      }
+    }
+    // add padding
+    for (int i = 0; i < readPadding; i++) {
+      readStream << GetRandomBase();
+    }
+    
+    string read = readStream.str();
+    
+    // maybe reverse
+    bool reversed = (rand() % 2) == 0;
+    if (reversed) {
+      read = RemapReverse(read);
+    }
+    
+    reads.push_back(read);
+    startPositions.push_back(readPos);
+    areReversed.push_back(reversed);
+    numErrors.push_back(errors);
+    
+    fastqStream << "@read" << j << endl;
+    fastqStream << read << endl;
+    fastqStream << "+" << endl;
+    fastqStream << read << endl;
+  }
+  
+  ReadSetPacBio<StandardReadIndex> rs;
+  rs.SetParameters(0.90, {0.25, 0.25, 0.25, 0.25}, 500);
+  rs.LoadReadSet(fastqStream);
+  
+  vector<ReadAlignmentPacBio> alignments = rs.GetAlignments(genome);
+  
+  set<int> alignedReadsIds;
+  for (unsigned int i = 0; i < alignments.size(); i++) {
+    ReadAlignmentPacBio &al = alignments[i];
+    alignedReadsIds.insert(al.read_id);
+    
+    // check position withing genome
+    EXPECT_NEAR(al.genome_first, startPositions[al.read_id], maxAlignmentEndDifference);
+    EXPECT_NEAR(al.genome_last, startPositions[al.read_id] + readLength, maxAlignmentEndDifference);
+    
+    // check position within read
+    EXPECT_NEAR(al.read_first, readPadding, maxAlignmentEndDifference);
+    EXPECT_NEAR(al.read_last, (int)reads[al.read_id].length() - readPadding, maxAlignmentEndDifference);
+    
+    // check orientation
+    EXPECT_EQ(al.reversed, areReversed[al.read_id]);
+    
+    // check difference
+    EXPECT_NEAR(al.dist, numErrors[al.read_id], maxDistanceDifference);
+  }
+  
+  // all reads must be found
+  EXPECT_EQ(numReads, alignedReadsIds.size());
 }

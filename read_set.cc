@@ -266,5 +266,115 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
   return false;
 }
 
+
+template<class TIndex>
+void ReadSetPacBio<TIndex>::AlignedPairsSet::MarkAsAligned(vector<pair<int, int> >& alignedPairsVector) {
+  long long previous = -1;
+  for (auto &p : alignedPairsVector) {
+    long long numValue = (((long long)p.first >> 3) << 32) + (p.second >> 3);
+    if (numValue != previous) {
+      alignedPairsSet.insert(numValue);
+      previous = numValue;
+    }
+  }
+}
+
+
+template<class TIndex>
+bool ReadSetPacBio<TIndex>::AlignedPairsSet::IsAligned(pair<int,int> seed) {
+  long long numValue = (((long long)(seed.first) >> 3) << 32) + ((seed.second) >> 3);
+  return alignedPairsSet.find(numValue) != alignedPairsSet.end();
+}
+
+
+template<class TIndex>
+void ReadSetPacBio<TIndex>::LoadReadSet(istream& is) {
+  string l1, l2, l3, l4;
+  int id = 0;
+  while (getline(is, l1)) {
+    getline(is, l2);
+    getline(is, l3);
+    getline(is, l4);
+    reads_.push_back(Sequence(l2));
+    index_.AddRead(id, l2);
+    id++;
+    if (id % 10000 == 0) {
+      printf("\rLoaded %d reads", id);
+      fflush(stdout);
+    }
+  }
+  printf("\n");
+}
+
+template<class TIndex>
+void ReadSetPacBio<TIndex>::SetParameters(float corelation, const array<float, 4>& frequencies, int minSufficientLength_) {
+  dalign_.SetAligningParameters(corelation, 50, frequencies);
+  minSufficientLength = minSufficientLength_;
+}
+
+
+template<class TIndex>
+vector<ReadAlignmentPacBio> ReadSetPacBio<TIndex>::GetAlignments(const string& genome) {
+  vector<ReadAlignmentPacBio> result;
+  Sequence forwardGenome(genome);
+  Sequence backwardGenome(forwardGenome, true);
+  
+  GetAlignments(forwardGenome, false, result);
+  GetAlignments(backwardGenome, true, result);
+  
+  return result;
+}
+
+template<class TIndex>
+void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vector<ReadAlignmentPacBio>& output) {
+  vector<CandidateReadPosition> candidates = index_.GetReadCandidates(genome.GetData());
+  
+  sort(candidates.begin(), candidates.end());
+  AlignedPairsSet alignedPairs;
+  
+  int lastId = -1;
+  for (auto& candidate : candidates) {
+    if (candidate.read_id != lastId) {
+      alignedPairs = AlignedPairsSet();
+    }
+    lastId = candidate.read_id;
+    
+    if (alignedPairs.IsAligned(make_pair(candidate.genome_pos, candidate.read_pos))) {
+      continue;
+    }
+    
+    Alignment al;
+    Sequence &read = reads_[candidate.read_id];
+    dalign_.ComputeAlignment(genome, read, pair<int, int>(candidate.genome_pos, candidate.read_pos), al);
+    int length = (al.GetLengthOnA() + al.GetLengthOnB()) / 2;
+    
+    if (length >= minSufficientLength) {
+      
+      al.ComputeTrace();
+      
+      vector<pair<int, int>> pairs;
+      al.GetAlignedPairs(pairs);
+      alignedPairs.MarkAsAligned(pairs);
+      
+      ReadAlignmentPacBio newAlignment;
+      newAlignment.read_id = candidate.read_id;
+      newAlignment.read_first = al.GetPosOnB().first;
+      newAlignment.read_last = al.GetPosOnB().second;
+      newAlignment.reversed = reversed;
+      newAlignment.dist = al.GetNumDifferences();
+      if (reversed) {
+        newAlignment.genome_first = genome.GetData().length() - al.GetPosOnA().second;
+        newAlignment.genome_last = genome.GetData().length() - al.GetPosOnA().first;
+      } else {
+        newAlignment.genome_first = al.GetPosOnA().first;
+        newAlignment.genome_last = al.GetPosOnA().second;
+      }
+      output.push_back(newAlignment);
+    }
+  }
+}
+
 template class ReadSet<StandardReadIndex>;
 template class ReadSet<RandomIndex>;
+template class ReadSetPacBio<StandardReadIndex>;
+template class ReadSetPacBio<RandomIndex>;

@@ -7,3 +7,13 @@ Makefile
 *.cmake
 build/*
 *.a
+/util_test
+/read_probability_calculator_test
+/path_test
+/node_test
+/moves_test
+/graph_test
+/get_subgraph
+/gaml
+/gmon.out
+/compile_commands.json

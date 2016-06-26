@@ -25,7 +25,12 @@ add_executable(path_test path_test.cc)
 target_link_libraries(path_test path ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} graph)
 add_test(PathTest path_test)
 
+add_library(dalign DALIGN/DB.c DALIGN/QV.c DALIGN/align.c)
+add_library(dalign_wrapper Sequence.cc DalignWrapper.cc)
+target_link_libraries(dalign_wrapper dalign)
+
 add_library(read_set read_set.cc)
+target_link_libraries(read_set dalign_wrapper)
 add_executable(read_set_test read_set_test.cc)
 target_link_libraries(read_set_test read_set ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(ReadSetTest read_set_test)
@@ -56,4 +61,3 @@ target_link_libraries(get_subgraph graph)
 
 add_executable(gaml gaml_main.cc)
 target_link_libraries(gaml graph path read_probability_calculator moves)
-

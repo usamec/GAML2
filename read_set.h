@@ -6,7 +6,9 @@
 #include <unordered_map>
 #include <vector>
 #include <gtest/gtest.h>
-
+#include "Sequence.h"
+#include "DalignWrapper.h"
+#include <unordered_set>
 using namespace std;
 
 struct CandidateReadPosition {
@@ -119,6 +121,68 @@ class ReadSet {
   TIndex index_;
 
   FRIEND_TEST(ReadSetTest, ExtendAlignTest);
+};
+
+
+struct ReadAlignmentPacBio {
+  ReadAlignmentPacBio() {}
+  ReadAlignmentPacBio(int read_id_, int genome_first_, int genome_last_, int read_first_, int read_last_, int dist_, bool reversed_) :
+      read_id(read_id_), genome_first(genome_first_), genome_last(genome_last_), read_first(read_first_), 
+      read_last(read_last_), dist(dist_), reversed(reversed_) {}
+
+  int read_id;
+  int genome_first;
+  int genome_last;
+  int read_first;
+  int read_last;
+  int dist;
+  bool reversed;
+};
+
+template<class TIndex=RandomIndex>
+class ReadSetPacBio {
+  
+  class AlignedPairsSet {
+    unordered_set<long long> alignedPairsSet;
+  public:
+      void MarkAsAligned(vector<pair<int, int>> &alignedPairsVector);
+      bool IsAligned(pair<int, int> seed);
+  };
+  
+public:
+  ReadSetPacBio() {
+    SetParameters(0.7, {0.25, 0.25, 0.25, 0.25}, 100);
+  }
+    
+  void LoadReadSet(const string& filename);
+
+  void LoadReadSet(istream& is);
+
+  // Two sided get
+  vector<ReadAlignmentPacBio> GetAlignments(const string& genome);
+
+  size_t size() const {
+    return reads_.size();
+  }
+
+  const string& operator[](int i) const {
+    return reads_[i].GetData();
+  }
+  
+  void SetParameters(float corelation, const array<float, 4>& frequencies, int minSufficientLength_);
+  
+private:
+  
+  // One sided get
+  void GetAlignments(Sequence& genome, bool reversed, vector<ReadAlignmentPacBio>& output);
+  
+  vector<Sequence> reads_;
+  
+  TIndex index_;
+  
+  DalignWrapper dalign_;
+  
+  int minSufficientLength;
 };
 
 #endif
