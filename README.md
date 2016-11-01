@@ -24,3 +24,10 @@ Then:
 cd build
 make
 ```
+
+Run as:
+```
+./gaml config.txt
+```
+
+See config example in example_config.txt.
