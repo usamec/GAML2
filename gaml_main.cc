@@ -8,6 +8,54 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
 #include <fstream>
+#include <cmath>
+#include <random>
+
+void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
+                         const Config& gaml_config, vector<Path>& paths) {
+  default_random_engine generator(47);
+  ProbabilityChanges prob_changes;
+  double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
+  cout << "starting probability: " << old_prob << endl;
+  probability_calculator.ApplyProbabilityChanges(prob_changes);
+
+  cout << PathsToDebugString(paths) << endl;
+  MoveConfig move_config;
+  for (int it_num = 1; it_num <= gaml_config.num_iterations(); it_num++) {
+    double T = gaml_config.t0() / log(it_num / gaml_config.n_divisor() + 1);
+    cout << "Iter: " << it_num << " T: " << T << endl;
+
+    vector<Path> new_paths;
+    bool accept_high_prob;
+    MakeMove(paths, new_paths, move_config, accept_high_prob);
+    double new_prob = probability_calculator.GetPathsProbability(new_paths, prob_changes);
+    cout << new_prob;
+
+    bool accept = false;
+    if (new_prob > old_prob) {
+      accept = true;
+    } else if (accept_high_prob) {
+      double prob = exp((new_prob - old_prob) / T);
+      uniform_real_distribution<double> dist(0.0, 1.0);
+      double samp = dist(generator);
+      if (samp < prob) {
+        cout << " higher";
+        accept = true;
+      }
+    }
+
+    if (accept) {
+      cout << " accept";
+      old_prob = new_prob;
+      paths = new_paths;
+      probability_calculator.ApplyProbabilityChanges(prob_changes);
+    }
+    cout << endl << PathsToDebugString(new_paths) << endl << endl;
+  }
+
+  ofstream of(gaml_config.output_file());
+  PathsToFasta(paths, of);
+}
 
 int main(int argc, char** argv) {
   ifstream config_file(argv[1]);
@@ -29,28 +77,5 @@ int main(int argc, char** argv) {
 
   cout << PathsToDebugString(paths) << endl;
 
-  ProbabilityChanges prob_changes;
-  double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
-  cout << old_prob << endl;
-  probability_calculator.ApplyProbabilityChanges(prob_changes);
-
-  ofstream of(argv[3]);
-  PathsToFasta(paths, of);
-
-  cout << PathsToDebugString(paths) << endl;
-  MoveConfig config;
-  for (int i = 0; i < 10; i++) {
-    cout << "Iter: " << i << endl;
-    vector<Path> new_paths;
-    MakeMove(paths, new_paths, config);
-    double new_prob = probability_calculator.GetPathsProbability(new_paths, prob_changes);
-    cout << new_prob;
-    if (new_prob > old_prob) {
-      cout << " accept";
-      old_prob = new_prob;
-      paths = new_paths;
-      probability_calculator.ApplyProbabilityChanges(prob_changes);
-    }
-    cout << endl << PathsToDebugString(new_paths) << endl << endl;
-  }
+  PerformOptimization(probability_calculator, gaml_config, paths);
 }

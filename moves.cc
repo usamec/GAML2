@@ -60,19 +60,23 @@ bool BreakPaths(const vector<Path>& paths, vector<Path>& out_paths,
   return true;
 }
 
-void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config) {
+void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config,
+              bool& accept_higher_prob) {
   while (true) {
     out_paths.clear();
-    if (TryMove(paths, out_paths, config)) return;
+    if (TryMove(paths, out_paths, config, accept_higher_prob)) return;
   }
 }
 
-bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config) {
+bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config,
+             bool& accept_higher_prob) {
   int move = rand()%2;
   if (move == 0) {
+    accept_higher_prob = false;
     return ExtendPathsRandomly(paths, out_paths, config);
   }
   if (move == 1) {
+    accept_higher_prob = true;
     return BreakPaths(paths, out_paths, config);
   }
   return false;

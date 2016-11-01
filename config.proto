@@ -10,6 +10,13 @@ message SingleReadSet {
 
 message Config {
     required string starting_graph = 1;
+    optional string output_file = 3 [default = 'output.fasta'];
+
+    // Annealing settings: Temperature at iteration n is t0 / (log(n/n_divisor + 1))
+    optional double t0 = 4 [default = 0.08];
+    optional double n_divisor = 5 [default = 1];
+
+    optional int32 num_iterations = 6 [default = 100];
 
     repeated SingleReadSet single_short_reads = 2;
 }

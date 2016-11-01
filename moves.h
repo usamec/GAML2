@@ -16,7 +16,7 @@ class MoveConfig {
     {}
 };
 
-void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config);
-bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config);
+void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config, bool& accept_higher_prob);
+bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config, bool& accept_higher_prob);
 
 #endif

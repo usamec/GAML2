@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-set(CMAKE_CXX_FLAGS                "-Wall -std=c++11 -O2 -pg")
+set(CMAKE_CXX_FLAGS                "-Wall -std=c++11 -O2")
 
 enable_testing()
 find_package (GTest REQUIRED)
