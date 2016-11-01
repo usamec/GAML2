@@ -29,11 +29,6 @@ int main(int argc, char** argv) {
 
   cout << PathsToDebugString(paths) << endl;
 
-  ReadSet<> rs;
-  rs.LoadReadSet(argv[2]);
-
-  cout << "read set loaded " << rs.size() << endl;
-
   ProbabilityChanges prob_changes;
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
   cout << old_prob << endl;
