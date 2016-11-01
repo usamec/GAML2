@@ -127,7 +127,7 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
 
 template<class TIndex>
 void ReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_size) {
-  if (read_size * 2 + 40 > vp_.size()) {
+  if (read_size * 2 + 40 > (int)vp_.size()) {
     vp_.resize(read_size * 2 + 40);
     for (auto &x: vp_) {
       x.resize(read_size * 2 + 40);
@@ -162,7 +162,7 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
     auto x = fr.front();
     fr.pop_front();
 
-    if (x.second.first == read.size()) {
+    if (x.second.first == (int)read.size()) {
       total_errs = x.first;
       break;
     }
@@ -171,7 +171,7 @@ bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
       return false; 
     }
 
-    if (x.second.second < genome.size()) {
+    if (x.second.second < (int)genome.size()) {
       // match / mismatch
       if (genome[x.second.second] == read[x.second.first]) {
         auto nx = make_pair(x.first, make_pair(x.second.first+1, x.second.second+1));

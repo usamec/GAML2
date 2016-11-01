@@ -3,6 +3,7 @@
 #include <sstream>
 #include <tuple>
 #include <set>
+#include <algorithm>
 #include "util.h"
 
 TEST(StandardReadIndexTest, GetCandidatesTest) {
