@@ -2,6 +2,7 @@
 #define READ_PROBABILITY_CALCULATOR_H__
 
 #include "path_aligner.h"
+#include "config.pb.h"
 
 struct ProbabilityChange {
   vector<Path> added_paths;
@@ -13,6 +14,10 @@ struct ProbabilityChange {
   int new_paths_length;
 
   vector<Path> new_paths;
+};
+
+struct ProbabilityChanges {
+  vector<ProbabilityChange> single_read_changes;
 };
 
 class SingleReadProbabilityCalculator {
@@ -68,6 +73,25 @@ class SingleReadProbabilityCalculator {
   double total_log_prob_;
   int old_paths_length_;
   vector<Path> old_paths_;
+};
+
+class GlobalProbabilityCalculator {
+ public:
+  GlobalProbabilityCalculator(const Config &config);
+
+  // Call this first
+  double GetPathsProbability(
+      const vector<Path>& paths, ProbabilityChanges& prob_changes);
+
+  // Call this after you are happy with current result (i.e. you got better
+  // probability)
+  void ApplyProbabilityChanges(const ProbabilityChanges& prob_changes);
+
+ private:
+  vector<ReadSet<>*> read_sets_;
+  // (prob calculator, weight)
+  vector<pair<SingleReadProbabilityCalculator, double>> single_read_calculators_;
+
 };
 
 #endif

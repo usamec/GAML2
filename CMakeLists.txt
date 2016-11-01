@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 set(CMAKE_CXX_FLAGS                "-Wall -std=c++11 -O2 -pg")
 
 enable_testing()
-find_package(GTest REQUIRED)
+find_package (GTest REQUIRED)
 find_package (Threads REQUIRED)
+find_package (Protobuf REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
+find_package (Protobuf REQUIRED)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS config.proto)
 
 add_library(node node.cc)
 
@@ -49,8 +53,9 @@ add_executable(moves_test moves_test.cc)
 target_link_libraries(moves_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} moves)
 add_test(MovesTest moves_test)
 
-add_library(read_probability_calculator read_probability_calculator.cc)
-target_link_libraries(read_probability_calculator path_aligner)
+add_library(read_probability_calculator read_probability_calculator.cc ${PROTO_SRCS} ${PROTO_HDRS})
+target_include_directories(read_probability_calculator PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(read_probability_calculator path_aligner ${PROTOBUF_LIBRARIES})
 
 add_executable(read_probability_calculator_test read_probability_calculator_test.cc)
 target_link_libraries(read_probability_calculator_test read_probability_calculator ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
@@ -59,5 +64,6 @@ add_test(ReadProbabilityCalculatorTest read_probability_calculator_test)
 add_executable(get_subgraph get_subgraph.cc)
 target_link_libraries(get_subgraph graph)
 
-add_executable(gaml gaml_main.cc)
-target_link_libraries(gaml graph path read_probability_calculator moves)
+add_executable(gaml gaml_main.cc ${PROTO_SRCS} ${PROTO_HDRS})
+target_include_directories(gaml PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(gaml graph path read_probability_calculator moves ${PROTOBUF_LIBRARIES})

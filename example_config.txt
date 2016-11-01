@@ -1,0 +1,4 @@
+starting_graph: '../test_data/workDirTest1/LastGraph'
+single_short_reads: {
+  filename: '../test_data/head_reads_single.fastq'
+}

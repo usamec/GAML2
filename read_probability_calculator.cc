@@ -1,6 +1,7 @@
 #include "read_probability_calculator.h"
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 
 double SingleReadProbabilityCalculator::GetPathsProbability(
     const vector<Path>& paths, ProbabilityChange& prob_change) {
@@ -112,4 +113,39 @@ int SingleReadProbabilityCalculator::GetPathsLength(const vector<Path>& paths) c
     ret += p.ToString(true).size();
   }
   return ret;
+}
+
+GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
+  for (auto &single_short_reads: config.single_short_reads()) {
+    ReadSet<>* rs = new ReadSet<>();
+    rs->LoadReadSet(single_short_reads.filename());
+    read_sets_.push_back(rs);
+    single_read_calculators_.push_back(make_pair(SingleReadProbabilityCalculator(
+          rs, single_short_reads.mismatch_prob(),
+          single_short_reads.min_prob_start(),
+          single_short_reads.min_prob_per_base(),
+          single_short_reads.penalty_constant(),
+          single_short_reads.penalty_step()), single_short_reads.weight()));
+  }
+}
+
+double GlobalProbabilityCalculator::GetPathsProbability(
+    const vector<Path>& paths, ProbabilityChanges& prob_changes) {
+  prob_changes.single_read_changes.clear();
+  double total_prob = 0;
+  for (auto &single_read_calculator: single_read_calculators_) {
+    ProbabilityChange ch;
+    double prob = single_read_calculator.first.GetPathsProbability(paths, ch);
+    total_prob += prob * single_read_calculator.second;
+    prob_changes.single_read_changes.push_back(ch);
+  }
+  return total_prob;
+}
+
+void GlobalProbabilityCalculator::ApplyProbabilityChanges(
+    const ProbabilityChanges& prob_changes) {
+  assert(prob_changes.single_read_changes.size() == single_read_calculators_.size());
+  for (size_t i = 0; i < single_read_calculators_.size(); i++) {
+    single_read_calculators_[i].first.ApplyProbabilityChange(prob_changes.single_read_changes[i]);
+  }
 }

@@ -6,6 +6,7 @@ Not complete yet.
 To compile:
 
 Install googletest.
+Install protocol buffers.
 
 Then.
 
