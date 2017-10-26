@@ -26,7 +26,7 @@ TEST(MovesTest, ForceJoinTest) {
   vector<Path> out_paths;
   MoveConfig config;
   config.big_node_threshold = 5;
-  MakeMove(paths, out_paths, config);
+  MakeMove(paths, out_paths, config, false);
   EXPECT_EQ(1, out_paths.size());
   EXPECT_TRUE(
       (a == out_paths[0][0] && b == out_paths[0][1]) ||
@@ -64,7 +64,7 @@ TEST(MovesTest, ForceBreakTest) {
   vector<Path> out_paths;
   MoveConfig config;
   config.big_node_threshold = 5;
-  MakeMove(paths, out_paths, config);
+  MakeMove(paths, out_paths, config, false);
   EXPECT_EQ(2, out_paths.size());
   EXPECT_EQ(1, out_paths[0].size());
   EXPECT_EQ(1, out_paths[1].size());
