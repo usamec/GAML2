@@ -8,6 +8,20 @@ message SingleReadSet {
     optional double weight = 7 [default = 1];
 }
 
+message PairedReadSet {
+    required string filename1 = 1;
+    required string filename2 = 8;
+    required double mean_distance = 9;
+    required double std_distance = 10;
+    
+    optional double mismatch_prob = 2 [default = 0.01];
+    optional double min_prob_start = 3 [default = -10];
+    optional double min_prob_per_base = 4 [default = -0.7];
+    optional double penalty_constant = 5 [default = 0];
+    optional int32 penalty_step = 6 [default = 0];
+    optional double weight = 7 [default = 1];
+}
+
 message Config {
     required string starting_graph = 1;
     optional int32 big_nodes_threshold = 8 [default = 500];
@@ -20,4 +34,5 @@ message Config {
     optional int32 num_iterations = 6 [default = 100];
 
     repeated SingleReadSet single_short_reads = 2;
+    repeated PairedReadSet paired_short_reads = 7;
 }
