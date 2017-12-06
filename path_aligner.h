@@ -5,7 +5,7 @@
 #include "hash_util.h"
 #include "path.h"
 
-// Handles caching of alignments
+// Handles caching of alignments (TODO implement)
 class PathAligner {
  public:
   PathAligner() {}

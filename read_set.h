@@ -139,6 +139,7 @@ struct ReadAlignmentPacBio {
   bool reversed;
 };
 
+// USES: DALIGN
 template<class TIndex=RandomIndex>
 class ReadSetPacBio {
   
