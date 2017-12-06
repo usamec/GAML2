@@ -10,6 +10,7 @@ message SingleReadSet {
 
 message Config {
     required string starting_graph = 1;
+    optional int32 big_nodes_threshold = 8 [default = 500];
     optional string output_file = 3 [default = 'output.fasta'];
 
     // Annealing settings: Temperature at iteration n is t0 / (log(n/n_divisor + 1))

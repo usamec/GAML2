@@ -71,9 +71,7 @@ int main(int argc, char** argv) {
 
   GlobalProbabilityCalculator probability_calculator(gaml_config);
 
-  int threshold = 500;
-
-  vector<Path> paths = BuildPathsFromSingleNodes(g->GetBigNodes(threshold));
+  vector<Path> paths = BuildPathsFromSingleNodes(g->GetBigNodes(gaml_config.big_nodes_threshold));
 
   cout << PathsToDebugString(paths) << endl;
 
