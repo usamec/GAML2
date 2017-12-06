@@ -127,6 +127,7 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
           single_short_reads.penalty_constant(),
           single_short_reads.penalty_step()), single_short_reads.weight()));
   }
+  // @TODO add loading of paired reads
 }
 
 double GlobalProbabilityCalculator::GetPathsProbability(
@@ -139,6 +140,7 @@ double GlobalProbabilityCalculator::GetPathsProbability(
     total_prob += prob * single_read_calculator.second;
     prob_changes.single_read_changes.push_back(ch);
   }
+  // @TODO add eval probability change for paired reads
   return total_prob;
 }
 
@@ -148,4 +150,5 @@ void GlobalProbabilityCalculator::ApplyProbabilityChanges(
   for (size_t i = 0; i < single_read_calculators_.size(); i++) {
     single_read_calculators_[i].first.ApplyProbabilityChange(prob_changes.single_read_changes[i]);
   }
+  // @TODO apply changes for paired reads
 }

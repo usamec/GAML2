@@ -18,6 +18,7 @@ struct ProbabilityChange {
 
 struct ProbabilityChanges {
   vector<ProbabilityChange> single_read_changes;
+  // @TODO add paired reads changes
 };
 
 class SingleReadProbabilityCalculator {
@@ -41,6 +42,7 @@ class SingleReadProbabilityCalculator {
 
   // Call this after you are happy with current result (i.e. you got better
   // probability)
+  // TODO: Rename apply -> commit
   void ApplyProbabilityChange(const ProbabilityChange& prob_change);
 
  private:
@@ -75,6 +77,10 @@ class SingleReadProbabilityCalculator {
   vector<Path> old_paths_;
 };
 
+class PairedReadProbabilityCalculator {
+  // @TODO add stuff for paired reads as in SingleReadProbabilityCalculator
+};
+
 class GlobalProbabilityCalculator {
  public:
   GlobalProbabilityCalculator(const Config &config);
@@ -91,6 +97,7 @@ class GlobalProbabilityCalculator {
   vector<ReadSet<>*> read_sets_;
   // (prob calculator, weight)
   vector<pair<SingleReadProbabilityCalculator, double>> single_read_calculators_;
+  vector<pair<PairedReadProbabilityCalculator, double>> paired_read_calculators_;
 
 };
 
