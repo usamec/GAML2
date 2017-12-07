@@ -17,7 +17,7 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
   ProbabilityChanges prob_changes;
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
   cout << "starting probability: " << old_prob << endl;
-  probability_calculator.ApplyProbabilityChanges(prob_changes);
+  probability_calculator.CommitProbabilityChanges(prob_changes);
 
   cout << PathsToDebugString(paths) << endl;
   MoveConfig move_config;
@@ -48,7 +48,7 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
       cout << " accept";
       old_prob = new_prob;
       paths = new_paths;
-      probability_calculator.ApplyProbabilityChanges(prob_changes);
+      probability_calculator.CommitProbabilityChanges(prob_changes);
     }
     cout << endl << PathsToDebugString(new_paths) << endl << endl;
   }

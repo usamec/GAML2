@@ -42,8 +42,7 @@ class SingleReadProbabilityCalculator {
 
   // Call this after you are happy with current result (i.e. you got better
   // probability)
-  // TODO: Rename apply -> commit
-  void ApplyProbabilityChange(const ProbabilityChange& prob_change);
+  void CommitProbabilityChange(const ProbabilityChange &prob_change);
 
  private:
   double InitTotalLogProb();
@@ -79,6 +78,7 @@ class SingleReadProbabilityCalculator {
 
 class PairedReadProbabilityCalculator {
   // @TODO add stuff for paired reads as in SingleReadProbabilityCalculator
+
 };
 
 class GlobalProbabilityCalculator {
@@ -91,7 +91,7 @@ class GlobalProbabilityCalculator {
 
   // Call this after you are happy with current result (i.e. you got better
   // probability)
-  void ApplyProbabilityChanges(const ProbabilityChanges& prob_changes);
+  void CommitProbabilityChanges(const ProbabilityChanges &prob_changes);
 
  private:
   vector<ReadSet<>*> read_sets_;

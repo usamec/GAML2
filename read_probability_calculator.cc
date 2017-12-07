@@ -83,8 +83,8 @@ double SingleReadProbabilityCalculator::GetAlignmentProb(
   return pow(mismatch_prob_, dist) * pow(1 - mismatch_prob_, read_length - dist);
 }
 
-void SingleReadProbabilityCalculator::ApplyProbabilityChange(
-    const ProbabilityChange& prob_change) {
+void SingleReadProbabilityCalculator::CommitProbabilityChange(
+    const ProbabilityChange &prob_change) {
   EvalTotalProbabilityFromChange(prob_change, true);
   old_paths_ = prob_change.new_paths;
   old_paths_length_ = prob_change.new_paths_length; 
@@ -144,11 +144,11 @@ double GlobalProbabilityCalculator::GetPathsProbability(
   return total_prob;
 }
 
-void GlobalProbabilityCalculator::ApplyProbabilityChanges(
-    const ProbabilityChanges& prob_changes) {
+void GlobalProbabilityCalculator::CommitProbabilityChanges(
+    const ProbabilityChanges &prob_changes) {
   assert(prob_changes.single_read_changes.size() == single_read_calculators_.size());
   for (size_t i = 0; i < single_read_calculators_.size(); i++) {
-    single_read_calculators_[i].first.ApplyProbabilityChange(prob_changes.single_read_changes[i]);
+    single_read_calculators_[i].first.CommitProbabilityChange(prob_changes.single_read_changes[i]);
   }
   // @TODO apply changes for paired reads
 }

@@ -202,11 +202,11 @@ TEST(SingleReadProbabilityCalculator, Test6) {
   ProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
-  rp.ApplyProbabilityChange(prob_change);
+  rp.CommitProbabilityChange(prob_change);
   Path p2({g->nodes_[0], g->nodes_[2]});
   double pr2 = rp.GetPathsProbability(vector<Path>({p2}), prob_change);
   EXPECT_FLOAT_EQ(-5.2210155, pr2);
-  rp.ApplyProbabilityChange(prob_change);
+  rp.CommitProbabilityChange(prob_change);
   pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
   pr2 = rp.GetPathsProbability(vector<Path>({p2}), prob_change);
@@ -246,7 +246,7 @@ TEST(SingleReadProbabilityCalculator, Test7) {
   ProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
-  rp.ApplyProbabilityChange(prob_change);
+  rp.CommitProbabilityChange(prob_change);
   Path p2({g->nodes_[2]});
   p1.AppendPathWithGap(p2, 100);
   double pr2 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
