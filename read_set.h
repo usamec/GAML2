@@ -70,6 +70,10 @@ class RandomIndex {
   unordered_map<string, vector<pair<int,int>>> index_; 
 };
 
+class StandardReadIndexPaired {
+  // @TODO implement StandardReadIndexPaired
+};
+
 template<class TIndex=RandomIndex>
 class ReadSet {
   class VisitedPositions {
@@ -185,5 +189,6 @@ private:
   
   int minSufficientLength;
 };
+// @TOTO create paired read set
 
 #endif

@@ -13,7 +13,9 @@ message PairedReadSet {
     required string filename2 = 8;
     required double mean_distance = 9;
     required double std_distance = 10;
-    
+
+    // @TODO ake konstanty tu treba nastavit? (i5)
+    // @TODO pridat parameter orientacie readov (reversed, complementary) (i6)
     optional double mismatch_prob = 2 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
     optional double min_prob_per_base = 4 [default = -0.7];

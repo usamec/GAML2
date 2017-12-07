@@ -18,7 +18,7 @@ struct ProbabilityChange {
 
 struct ProbabilityChanges {
   vector<ProbabilityChange> single_read_changes;
-  // @TODO add paired reads changes
+  // @TODO (maybe?) add paired reads changes
 };
 
 class SingleReadProbabilityCalculator {
@@ -76,11 +76,6 @@ class SingleReadProbabilityCalculator {
   vector<Path> old_paths_;
 };
 
-class PairedReadProbabilityCalculator {
-  // @TODO add stuff for paired reads as in SingleReadProbabilityCalculator
-
-};
-
 class GlobalProbabilityCalculator {
  public:
   GlobalProbabilityCalculator(const Config &config);
@@ -96,8 +91,8 @@ class GlobalProbabilityCalculator {
  private:
   vector<ReadSet<>*> read_sets_;
   // (prob calculator, weight)
+  // @TODO do you speak polymorphism? (vytvorit template na read calculatory) (i3)
   vector<pair<SingleReadProbabilityCalculator, double>> single_read_calculators_;
-  vector<pair<PairedReadProbabilityCalculator, double>> paired_read_calculators_;
 
 };
 

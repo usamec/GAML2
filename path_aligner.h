@@ -10,6 +10,7 @@ class PathAligner {
  public:
   PathAligner() {}
   PathAligner(ReadSet<>* read_set) : read_set_(read_set) {}
+  // @TODO add wrapping for PairedReadSet
 
   vector<ReadAlignment> GetAlignmentsForPath(const Path& p);
 
