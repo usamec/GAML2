@@ -62,7 +62,7 @@ vector<CandidateReadPosition> RandomIndex::GetReadCandidates(const string& genom
 }
 
 template<class TIndex>
-void ReadSet<TIndex>::LoadReadSet(istream& is) {
+void SingleShortReadSet<TIndex>::LoadReadSet(istream& is) {
   string l1, l2, l3, l4;
   int id = 0;
   while (getline(is, l1)) {
@@ -81,8 +81,8 @@ void ReadSet<TIndex>::LoadReadSet(istream& is) {
 }
 
 template<class TIndex>
-vector<ReadAlignment> ReadSet<TIndex>::GetAlignments(const string& genome) const {
-  vector<ReadAlignment> ret;
+vector<SingleReadAlignment> SingleShortReadSet<TIndex>::GetAlignments(const string& genome) const {
+  vector<SingleReadAlignment> ret;
   GetAlignments(genome, false, ret);
   string reversed_genome = ReverseSeq(genome);
   GetAlignments(reversed_genome, true, ret);
@@ -90,29 +90,29 @@ vector<ReadAlignment> ReadSet<TIndex>::GetAlignments(const string& genome) const
 }
 
 template<class TIndex>
-void ReadSet<TIndex>::GetAlignments(const string& genome,
+void SingleShortReadSet<TIndex>::GetAlignments(const string& genome,
                                     bool reversed,
-                                    vector<ReadAlignment>& output) const {
+                                    vector<SingleReadAlignment>& output) const {
   vector<CandidateReadPosition> candidates = index_.GetReadCandidates(genome);
 
   sort(candidates.begin(), candidates.end());
 
   int last_read_id = -1;
-  vector<ReadAlignment> buffer;
+  vector<SingleReadAlignment> buffer;
   for (auto &cand: candidates) {
     if (cand.read_id != last_read_id) {
       output.insert(output.end(), buffer.begin(), buffer.end());
       buffer.clear();
     }
     last_read_id = cand.read_id;
-    ReadAlignment al;
+    SingleReadAlignment al;
     if (ExtendAlignment(cand, genome, al)) {
       if (reversed) {
         al.genome_pos = genome.size() - al.genome_pos - reads_[cand.read_id].size();
       }
       auto it = find_if(
           buffer.begin(), buffer.end(),
-          [&al](const ReadAlignment& a) { return a.read_id == al.read_id && 
+          [&al](const SingleReadAlignment& a) { return a.read_id == al.read_id &&
                                                  a.genome_pos == al.genome_pos; });
       if (it == buffer.end()) {
         al.reversed = reversed;
@@ -126,7 +126,7 @@ void ReadSet<TIndex>::GetAlignments(const string& genome,
 }
 
 template<class TIndex>
-void ReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_size) {
+void SingleShortReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_size) {
   if (read_size * 2 + 40 > (int)vp_.size()) {
     vp_.resize(read_size * 2 + 40);
     for (auto &x: vp_) {
@@ -139,9 +139,9 @@ void ReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_size) {
 }
 
 template<class TIndex>
-bool ReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
+bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
                                       const string& genome,
-                                      ReadAlignment& al) const {
+                                      SingleReadAlignment& al) const {
   int max_err_start = 6;
   int max_err = max_err_start;
   // Static - we reuse memory and make fewer allocations
@@ -374,7 +374,8 @@ void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vecto
   }
 }
 
-template class ReadSet<StandardReadIndex>;
-template class ReadSet<RandomIndex>;
+template class SingleShortReadSet<StandardReadIndex>;
+template class SingleShortReadSet<RandomIndex>;
 template class ReadSetPacBio<StandardReadIndex>;
 template class ReadSetPacBio<RandomIndex>;
+template class ShortPairedReadSet<StandardPairedReadIndex>;

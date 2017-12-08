@@ -31,9 +31,9 @@ inline bool operator<(const CandidateReadPosition& a, const CandidateReadPositio
   return a.read_pos < b.read_pos;
 }
 
-struct ReadAlignment {
-  ReadAlignment() {}
-  ReadAlignment(int read_id_, int genome_pos_, int dist_, bool reversed_) :
+struct SingleReadAlignment {
+  SingleReadAlignment() {}
+  SingleReadAlignment(int read_id_, int genome_pos_, int dist_, bool reversed_) :
       read_id(read_id_), genome_pos(genome_pos_), dist(dist_), reversed(reversed_) {}
 
   int read_id;
@@ -42,9 +42,15 @@ struct ReadAlignment {
   bool reversed;
 };
 
-inline bool operator<(const ReadAlignment& a, const ReadAlignment& b) {
+inline bool operator<(const SingleReadAlignment& a, const SingleReadAlignment& b) {
   return a.read_id < b.read_id;
 }
+
+struct PairedReadAlignment {
+  // @TODO paired read alignment structure
+};
+
+// @TODO comparator for PairedReadAlignment
 
 class StandardReadIndex {
  public:
@@ -70,12 +76,12 @@ class RandomIndex {
   unordered_map<string, vector<pair<int,int>>> index_; 
 };
 
-class StandardReadIndexPaired {
+class StandardPairedReadIndex {
   // @TODO implement StandardReadIndexPaired
 };
 
 template<class TIndex=RandomIndex>
-class ReadSet {
+class SingleShortReadSet {
   class VisitedPositions {
    vector<vector<int>> vp_;
    int offset_;
@@ -94,7 +100,7 @@ class ReadSet {
   };
 
  public:
-  ReadSet() {}
+  SingleShortReadSet() {}
 
   void LoadReadSet(const string& filename) {
     ifstream is(filename);
@@ -104,7 +110,7 @@ class ReadSet {
   void LoadReadSet(istream& is);
 
   // Two sided get
-  vector<ReadAlignment> GetAlignments(const string& genome) const;
+  vector<SingleReadAlignment> GetAlignments(const string& genome) const;
 
   size_t size() const {
     return reads_.size();
@@ -116,10 +122,10 @@ class ReadSet {
 
  private:
   // One sided get
-  void GetAlignments(const string& genome, bool reversed, vector<ReadAlignment>& output) const;
+  void GetAlignments(const string& genome, bool reversed, vector<SingleReadAlignment>& output) const;
 
   bool ExtendAlignment(const CandidateReadPosition& candidate, const string& genome,
-                       ReadAlignment& al) const;
+                       SingleReadAlignment& al) const;
 
   vector<string> reads_;
   TIndex index_;
@@ -189,6 +195,10 @@ private:
   
   int minSufficientLength;
 };
-// @TOTO create paired read set
+
+template<class TIndex=StandardPairedReadIndex>
+class ShortPairedReadSet {
+  // @TODO create paired read set
+};
 
 #endif

@@ -1,10 +1,10 @@
 #include "path_aligner.h"
 
-vector<ReadAlignment> PathAligner::GetAlignmentsForPath(const Path& p) {
-  vector<ReadAlignment> ret;
+vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentsForPath(const Path& p) {
+  vector<SingleReadAlignment> ret;
 
   string genome = p.ToString(true);
 
-  ret = read_set_->GetAlignments(genome);
+  ret = single_short_read_set_->GetAlignments(genome);
   return ret;
 }

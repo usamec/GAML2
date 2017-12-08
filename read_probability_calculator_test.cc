@@ -26,11 +26,11 @@ TEST(SingleReadProbabilityCalculatorTest, Test1) {
   ss2 << "+" << endl;
   ss2 << "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-6.29749500325813737913, pr1);
 }
@@ -55,11 +55,11 @@ TEST(SingleReadProbabilityCalculatorTest, Test2) {
   ss2 << "+" << endl;
   ss2 << "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-99.781403, pr1);
 }
@@ -89,11 +89,11 @@ TEST(SingleReadProbabilityCalculatorTest, Test3) {
   ss2 << "+" << endl;
   ss2 << part1 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
 }
@@ -122,11 +122,11 @@ TEST(SingleReadProbabilityCalculatorTest, Test4) {
   ss2 << "+" << endl;
   ss2 << "GTCAGCTTTTGGTGCTTGAGCATCATTTAGCTTTTTAGCTTCTGCTAAAAGGTTAGCGCTTTGGCTTGGGTCATCTTTTAGGCTTTGGATGAAACCATTGCGTTGTTCTTCGTTTAAGTTA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-6.29749500325813737913, pr1);
 }
@@ -157,11 +157,11 @@ TEST(SingleReadProbabilityCalculator, Test5) {
   ss2 << "+" << endl;
   ss2 << part1 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
   Path p2({g->nodes_[0], g->nodes_[2]});
@@ -195,11 +195,11 @@ TEST(SingleReadProbabilityCalculator, Test6) {
   ss2 << "+" << endl;
   ss2 << part1 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
   rp.CommitProbabilityChange(prob_change);
@@ -239,11 +239,11 @@ TEST(SingleReadProbabilityCalculator, Test7) {
   ss2 << "+" << endl;
   ss2 << part1 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss2);
 
   SingleReadProbabilityCalculator rp(&rs, 0.01, -10, -0.7, 0, 0);
-  ProbabilityChange prob_change;
+  SingleProbabilityChange prob_change;
   double pr1 = rp.GetPathsProbability(vector<Path>({p1}), prob_change);
   EXPECT_FLOAT_EQ(-5.202997, pr1);
   rp.CommitProbabilityChange(prob_change);

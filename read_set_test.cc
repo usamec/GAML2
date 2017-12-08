@@ -29,7 +29,7 @@ TEST(ReadSetTest, LoadTest) {
   ss << "+" << endl;
   ss << "AAAAAAA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss);
 
   ASSERT_EQ(1, rs.size());
@@ -43,11 +43,11 @@ TEST(ReadSetTest, ExtendAlignTest) {
   ss << "+" << endl;
   ss << "AAAAAAAAAAAAAAAA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss);
 
   CandidateReadPosition candidate(0, 0, 0);
-  ReadAlignment al;
+  SingleReadAlignment al;
   EXPECT_EQ(true, rs.ExtendAlignment(candidate, "AAAACCCCTTTTGGGGAAA", al));
   EXPECT_EQ(0, al.read_id);
   EXPECT_EQ(0, al.dist);
@@ -110,10 +110,10 @@ TEST(ReadSetTest, GetAlignmentsTest) {
   ss << "+" << endl;
   ss << "AAAAAAAAAAAAAAAA" << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss);
 
-  vector<ReadAlignment> als = rs.GetAlignments("AAAACCCCTTTTGGGG");
+  vector<SingleReadAlignment> als = rs.GetAlignments("AAAACCCCTTTTGGGG");
   ASSERT_EQ(1, als.size());
   EXPECT_EQ(0, als[0].read_id);
   EXPECT_EQ(0, als[0].dist);
@@ -179,11 +179,11 @@ TEST(ReadSetTest, GetAlignmentsTestBig) {
   ss << "+" << endl;
   ss << part1 << part2 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss);
 
   string genome = "ACGTTT" + part1 + part2 + "GTCT";
-  vector<ReadAlignment> als = rs.GetAlignments(genome);
+  vector<SingleReadAlignment> als = rs.GetAlignments(genome);
   ASSERT_EQ(1, als.size());
   EXPECT_EQ(false, als[0].reversed);
   EXPECT_EQ(6, als[0].genome_pos);
@@ -229,11 +229,11 @@ TEST(ReadSetTest, GetAlignmentsTestMoreReads) {
   ss << "+" << endl;
   ss << part2 << part3 << endl;
 
-  ReadSet<> rs;
+  SingleShortReadSet<> rs;
   rs.LoadReadSet(ss);
 
   string genome = "ACGTTT" + part1 + part2 + part3 + "GTCT";
-  vector<ReadAlignment> als = rs.GetAlignments(genome);
+  vector<SingleReadAlignment> als = rs.GetAlignments(genome);
   ASSERT_EQ(2, als.size());
   EXPECT_EQ(false, als[0].reversed);
   EXPECT_EQ(6, als[0].genome_pos);
