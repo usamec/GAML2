@@ -22,6 +22,8 @@ message PairedReadSet {
     optional double penalty_constant = 5 [default = 0];
     optional int32 penalty_step = 6 [default = 0];
     optional double weight = 7 [default = 1];
+    // If set then we use this read set as advice during walk extending.
+    optional bool use_as_advice = 11 [default = false];
 }
 
 message Config {
