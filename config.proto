@@ -37,5 +37,5 @@ message Config {
     optional int32 num_iterations = 6 [default = 100];
 
     repeated SingleReadSet single_short_reads = 2;
-    repeated PairedReadSet paired_short_reads = 7;
+    repeated PairedReadSet paired_reads = 7;
 }

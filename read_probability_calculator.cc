@@ -115,6 +115,11 @@ int SingleReadProbabilityCalculator::GetPathsLength(const vector<Path>& paths) c
   return ret;
 }
 
+double PairedReadProbabilityCalculator::InitTotalLogProb() {
+  // @TODO implement paired read initial log probability
+  return 1;
+}
+
 GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
   for (auto &single_short_reads: config.single_short_reads()) {
     SingleShortReadSet<>* rs = new SingleShortReadSet<>();
@@ -127,7 +132,22 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
           single_short_reads.penalty_constant(),
           single_short_reads.penalty_step()), single_short_reads.weight()));
   }
-  // @TODO add loading of paired reads
+  for (auto &paired_reads: config.paired_reads()) {
+    ShortPairedReadSet<>* rs = new ShortPairedReadSet<>();
+    rs->LoadReadSet(paired_reads.filename1(), paired_reads.filename2());
+    paired_read_sets_.push_back(rs);
+    paired_read_calculators_.push_back(make_pair(
+        PairedReadProbabilityCalculator(
+          rs,
+          paired_reads.mismatch_prob(),
+          paired_reads.min_prob_start(),
+          paired_reads.min_prob_per_base(),
+          paired_reads.penalty_constant(),
+          paired_reads.penalty_step()
+        ),
+        paired_reads.weight()
+    ));
+  }
 }
 
 double GlobalProbabilityCalculator::GetPathsProbability(

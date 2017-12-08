@@ -199,6 +199,8 @@ private:
 template<class TIndex=StandardPairedReadIndex>
 class ShortPairedReadSet {
   // @TODO create paired read set
+ public:
+  void LoadReadSet(const string& filename1, const string& filename2);
 };
 
 #endif

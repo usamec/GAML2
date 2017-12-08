@@ -374,6 +374,12 @@ void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vecto
   }
 }
 
+
+template<class TIndex>
+void ShortPairedReadSet<TIndex>::LoadReadSet(const string &filename1, const string &filename2) {
+  // @TODO implement loading of paired reads from two fastq files
+}
+
 template class SingleShortReadSet<StandardReadIndex>;
 template class SingleShortReadSet<RandomIndex>;
 template class ReadSetPacBio<StandardReadIndex>;
