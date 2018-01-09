@@ -13,6 +13,7 @@
 
 void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
                          const Config& gaml_config, vector<Path>& paths) {
+  // @TODO add random seed to config? (i14)
   default_random_engine generator(47);
   ProbabilityChanges prob_changes;
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
