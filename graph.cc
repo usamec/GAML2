@@ -2,6 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <queue>
 #include <unordered_set>
+#include <iostream>
 
 using boost::is_any_of;
 using boost::split;
