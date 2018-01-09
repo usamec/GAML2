@@ -1,4 +1,5 @@
 message SingleReadSet {
+    // filename is relative to executing directory
     required string filename = 1;
     optional double mismatch_prob = 2 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
@@ -9,12 +10,14 @@ message SingleReadSet {
 }
 
 message PairedReadSet {
+    // filename is relative to executing directory
     required string filename1 = 1;
+    // filename is relative to executing directory
     required string filename2 = 8;
     required double mean_distance = 9;
     required double std_distance = 10;
 
-    // @TODO pridat parameter orientacie readov (reversed, complementary) (i6)
+    optional string orientation = 12 [default = "FR"];
     optional double mismatch_prob = 2 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
     optional double min_prob_per_base = 4 [default = -0.7];
@@ -26,6 +29,7 @@ message PairedReadSet {
 }
 
 message Config {
+    // filename is relative to executing directory
     required string starting_graph = 1;
     optional int32 big_nodes_threshold = 8 [default = 500];
     optional string output_file = 3 [default = 'output.fasta'];
