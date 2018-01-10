@@ -61,6 +61,14 @@ vector<CandidateReadPosition> RandomIndex::GetReadCandidates(const string& genom
   return ret;
 }
 
+void StandardPairedReadIndex::AddRead(int id, const pair<string, string> &data) {
+  // @TODO implement
+}
+vector<CandidateReadPosition> StandardPairedReadIndex::GetReadCandidates(const string &genome) const {
+  // @TODO implement
+  return vector<CandidateReadPosition>();
+}
+
 template<class TIndex>
 void SingleShortReadSet<TIndex>::LoadReadSet(istream& is) {
   string l1, l2, l3, l4;
@@ -376,8 +384,35 @@ void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vecto
 
 
 template<class TIndex>
-void ShortPairedReadSet<TIndex>::LoadReadSet(const string &filename1, const string &filename2) {
-  // @TODO implement loading of paired reads from two fastq files
+void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2, const string &orientation) {
+  // @TODO implement
+  string l1, l2, l3, l4, r1, r2, r3, r4;
+  int id = 0;
+  while (getline(is1, l1) && getline(is2, r1)) {
+    getline(is1, l2);
+    getline(is1, l3);
+    getline(is1, l4);
+
+    getline(is2, r2);
+    getline(is2, r3);
+    getline(is2, r4);
+
+    if (orientation != "FR") {
+      printf("ORIENTATION IS NOT FR, don't kwo how to work with others yet\n");
+      fflush(stdout);
+      exit(1);
+    }
+
+    reads_.push_back(make_pair(l2, r2));
+    index_.AddRead(id, make_pair(l2, r2));
+
+    id++;
+    if (id % 10000 == 0) {
+      printf("\rLoaded %d reads", id);
+      fflush(stdout);
+    }
+  }
+  printf("\n");
 }
 
 template class SingleShortReadSet<StandardReadIndex>;
@@ -385,3 +420,4 @@ template class SingleShortReadSet<RandomIndex>;
 template class ReadSetPacBio<StandardReadIndex>;
 template class ReadSetPacBio<RandomIndex>;
 template class ShortPairedReadSet<StandardPairedReadIndex>;
+

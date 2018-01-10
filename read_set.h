@@ -78,6 +78,15 @@ class RandomIndex {
 
 class StandardPairedReadIndex {
   // @TODO implement StandardReadIndexPaired
+  public:
+  explicit StandardPairedReadIndex(int k=13): k_(k) {}
+  void AddRead(int id, const pair<string, string>& data);
+
+  vector<CandidateReadPosition> GetReadCandidates(const string& genome) const;
+  int k_;
+  // @TODO premysliet, ako ma vyzerat index, ci tam treba dat viac parametrov (napriklad ci prvy alebo druhy z paired readu je tam)
+  // read_id, pos_in_read
+  unordered_map<string, vector<pair<int,int>>> index_;
 };
 
 template<class TIndex=RandomIndex>
@@ -200,7 +209,23 @@ template<class TIndex=StandardPairedReadIndex>
 class ShortPairedReadSet {
   // @TODO create paired read set
  public:
-  void LoadReadSet(const string& filename1, const string& filename2);
+  void LoadReadSet(const string& filename1, const string& filename2, const string& orientation) {
+    ifstream is1(filename1), is2(filename2);
+    LoadReadSet(is1, is2, orientation);
+  }
+
+  void LoadReadSet(istream& is1, istream& is2, const string& orientation);
+
+  size_t size() const {
+    return reads_.size();
+  }
+
+  const pair<string, string> operator[](int i) const {
+    return reads_[i];
+  }
+ private:
+  vector<pair<string, string> > reads_;
+  TIndex index_;
 };
 
 #endif
