@@ -117,7 +117,44 @@ int SingleReadProbabilityCalculator::GetPathsLength(const vector<Path>& paths) c
 
 double PairedReadProbabilityCalculator::InitTotalLogProb() {
   // @TODO implement paired read initial log probability
-  return 1;
+  double ret = 0;
+  for (size_t i = 0; i < read_set_->size(); i++) {
+    read_probs_[i] = 0;
+    ret += GetMinLogProbability((*read_set_)[i].first.size() + (*read_set_)[i].second.size()) / read_set_->size();
+  }
+  return ret;
+}
+void PairedReadProbabilityCalculator::CommitProbabilityChange(const PairedProbabilityChange &prob_change) {
+  // @TODO implement PairedReadProbabilitycalculator::CommitProbabilityChange
+}
+double PairedReadProbabilityCalculator::GetPathsProbability(const vector<Path> &paths,
+                                                            PairedProbabilityChange &prob_change) {
+  // @TODO implement PairedReadProbabilityCalculator::GetPathsProbability
+  return 0;
+}
+void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityChange &prob_change) {
+  // @TODO implement
+}
+double PairedReadProbabilityCalculator::GetMinLogProbability(int read_length) const {
+  // see "Reads that have no good alignment to A" in the  GAML article
+  return min_prob_start_ + read_length * min_prob_per_base_;
+}
+double PairedReadProbabilityCalculator::GetRealReadProbability(double prob, int read_id) const {
+  // @TODO implement
+  return 0;
+}
+double PairedReadProbabilityCalculator::EvalTotalProbabilityFromChange(const PairedProbabilityChange &prob_change,
+                                                                       bool write) {
+  // @TODO implement
+  return 0;
+}
+int PairedReadProbabilityCalculator::GetPathsLength(const vector<Path> &paths) const {
+  // @TODO implement
+  return 0;
+}
+double PairedReadProbabilityCalculator::GetAlignmentProb(int dist, int read_length) const {
+  // @TODO implement
+  return 0;
 }
 
 GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
@@ -132,18 +169,22 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
           single_short_reads.penalty_constant(),
           single_short_reads.penalty_step()), single_short_reads.weight()));
   }
+
+
   for (auto &paired_reads: config.paired_reads()) {
     ShortPairedReadSet<>* rs = new ShortPairedReadSet<>();
-    rs->LoadReadSet(paired_reads.filename1(), paired_reads.filename2());
+    rs->LoadReadSet(paired_reads.filename1(), paired_reads.filename2(), paired_reads.orientation());
     paired_read_sets_.push_back(rs);
     paired_read_calculators_.push_back(make_pair(
         PairedReadProbabilityCalculator(
-          rs,
-          paired_reads.mismatch_prob(),
-          paired_reads.min_prob_start(),
-          paired_reads.min_prob_per_base(),
-          paired_reads.penalty_constant(),
-          paired_reads.penalty_step()
+            rs,
+            paired_reads.mismatch_prob(),
+            paired_reads.min_prob_start(),
+            paired_reads.min_prob_per_base(),
+            paired_reads.penalty_constant(),
+            paired_reads.penalty_step(),
+            paired_reads.mean_distance(),
+            paired_reads.std_distance()
         ),
         paired_reads.weight()
     ));
@@ -160,7 +201,15 @@ double GlobalProbabilityCalculator::GetPathsProbability(
     total_prob += prob * single_read_calculator.second;
     prob_changes.single_read_changes.push_back(ch);
   }
-  // @TODO add eval probability change for paired reads
+
+  prob_changes.paired_read_changes.clear();
+  for (auto &paired_read_calculator: paired_read_calculators_) {
+    PairedProbabilityChange ch;
+    double prob = paired_read_calculator.first.GetPathsProbability(paths, ch);
+    total_prob += prob * paired_read_calculator.second;
+    prob_changes.paired_read_changes.push_back(ch);
+  }
+
   return total_prob;
 }
 
@@ -170,5 +219,9 @@ void GlobalProbabilityCalculator::CommitProbabilityChanges(
   for (size_t i = 0; i < single_read_calculators_.size(); i++) {
     single_read_calculators_[i].first.CommitProbabilityChange(prob_changes.single_read_changes[i]);
   }
-  // @TODO apply changes for paired reads
+
+  assert(prob_changes.paired_read_changes.size() == paired_read_calculators_.size());
+  for (size_t i = 0; i < single_read_calculators_.size(); i++) {
+    paired_read_calculators_[i].first.CommitProbabilityChange(prob_changes.paired_read_changes[i]);
+  }
 }

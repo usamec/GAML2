@@ -17,10 +17,20 @@ struct SingleProbabilityChange {
 };
 
 struct PairedProbabilityChange {
-  // @TODO PairedProbabilityChange
+  vector<Path> added_paths;
+  vector<Path> removed_paths;
+
+  vector<SingleReadAlignment> added_alignments;
+  vector<SingleReadAlignment> removed_alignments;
+
+  int new_paths_length;
+
+  vector<Path> new_paths;
 };
 
 struct ProbabilityChanges {
+  // single object for every probability change
+  // @TODO create an interface for ProbabilityChange?
   vector<SingleProbabilityChange> single_read_changes;
   vector<PairedProbabilityChange> paired_read_changes;
 };
@@ -89,12 +99,17 @@ class PairedReadProbabilityCalculator {
       double min_prob_start,
       double min_prob_per_base,
       double penalty_constant,
-      int penalty_step
+      int penalty_step,
+      double mean_distance,
+      double std_distance
   ): read_set_(read_set), path_aligner_(read_set), mismatch_prob_(mismatch_prob),
      min_prob_start_(min_prob_start), min_prob_per_base_(min_prob_per_base),
      penalty_constant_(penalty_constant), penalty_step_(penalty_step),
-     old_paths_length_(1){
+     old_paths_length_(1), mean_distance_(mean_distance),
+     std_distance_(std_distance) {
+    read_probs_.resize(read_set_->size());
     total_log_prob_ = InitTotalLogProb();
+
   }
   // Call this first
   double GetPathsProbability(
@@ -107,6 +122,21 @@ class PairedReadProbabilityCalculator {
 
   double InitTotalLogProb();
 
+  double GetMinLogProbability(int read_length) const;
+
+  // max(min_prob, prob)
+  double GetRealReadProbability(double prob, int read_id) const;
+
+  // Evals change with filled added and removed paths
+  void EvalProbabilityChange(PairedProbabilityChange& prob_change);
+
+  // Get total probability from change and cached data
+  double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false);
+
+  int GetPathsLength(const vector<Path>& paths) const;
+
+  double GetAlignmentProb(int dist, int read_length) const;
+
   ShortPairedReadSet<>* read_set_;
   PairedReadPathAligner path_aligner_;
   double mismatch_prob_;
@@ -116,6 +146,11 @@ class PairedReadProbabilityCalculator {
   int penalty_step_;
   int old_paths_length_;
   double total_log_prob_;
+  double mean_distance_;
+  double std_distance_;
+
+  vector<double> read_probs_;
+  vector<Path> old_paths_;
 
 };
 
