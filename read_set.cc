@@ -61,14 +61,6 @@ vector<CandidateReadPosition> RandomIndex::GetReadCandidates(const string& genom
   return ret;
 }
 
-void StandardPairedReadIndex::AddRead(int id, const pair<string, string> &data) {
-  // @TODO implement
-}
-vector<CandidateReadPosition> StandardPairedReadIndex::GetReadCandidates(const string &genome) const {
-  // @TODO implement
-  return vector<CandidateReadPosition>();
-}
-
 template<class TIndex>
 void SingleShortReadSet<TIndex>::LoadReadSet(istream& is) {
   string l1, l2, l3, l4;
@@ -384,40 +376,72 @@ void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vecto
 
 
 template<class TIndex>
-void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2, const string &orientation) {
+void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2) {
+  reads_1_.LoadReadSet(is1);
+  reads_2_.LoadReadSet(is2);
+  assert(reads_1_.size() == reads_2_.size());
+}
+
+template<class TIndex>
+vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const string &genome) const {
   // @TODO implement
-  string l1, l2, l3, l4, r1, r2, r3, r4;
-  int id = 0;
-  while (getline(is1, l1) && getline(is2, r1)) {
-    getline(is1, l2);
-    getline(is1, l3);
-    getline(is1, l4);
+  // WE ARE HERE NOW
+  vector<PairedReadAlignment> ret;
 
-    getline(is2, r2);
-    getline(is2, r3);
-    getline(is2, r4);
+  // @TODO optimize genome inversion maybe?
+  vector<SingleReadAlignment> als1 = reads_1_.GetAlignments(genome);
+  vector<SingleReadAlignment> als2 = reads_2_.GetAlignments(genome);
+  // assuming als1 and als2 are sorted by read position as primary key
 
-    if (orientation != "FR") {
-      printf("ORIENTATION IS NOT FR, don't kwo how to work with others yet\n");
-      fflush(stdout);
-      exit(1);
+  auto it1 = als1.begin();
+  auto it2 = als2.begin();
+
+  // run through both vectors, find groups with equal read_id and do cross-check
+  // for potential pairing (with respect to the assumed orientation)
+  vector<SingleReadAlignment> current_als1, current_als2;
+  for (int current_read_id = 0; current_read_id < reads_1_.size() && it1 != als1.end() && it2 != als2.end(); current_read_id++) {
+    current_als1.clear();
+    current_als2.clear();
+    while (it1 != als1.end() && it1->read_id == current_read_id) {
+      current_als1.push_back(*it1);
+      it1++;
     }
+    while (it2 != als2.end() && it2->read_id == current_read_id) {
+      current_als2.push_back(*it2);
+      it2++;
+    }
+    if (current_als1.size() > 0 && current_als2.size() > 0) {
+      // cross check for finding paired alignments
+      for (int i = 0; i < current_als1.size(); i++) {
+        for (int j = 0; j < current_als2.size(); j++) {
 
-    reads_.push_back(make_pair(l2, r2));
-    index_.AddRead(id, make_pair(l2, r2));
-
-    id++;
-    if (id % 10000 == 0) {
-      printf("\rLoaded %d reads", id);
-      fflush(stdout);
+        }
+      }
     }
   }
-  printf("\n");
+
+
+  return ret;
+}
+
+template<class TIndex>
+void ShortPairedReadSet<TIndex>::GetAlignments(const string &genome,
+                                               bool reversed,
+                                               vector<PairedReadAlignment> &output) const {
+  // @TODO implement
+}
+template<class TIndex>
+bool ShortPairedReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition &candidate,
+                                                 const string &genome,
+                                                 PairedReadAlignment &al) const {
+  // @TODO implement
+  return false;
 }
 
 template class SingleShortReadSet<StandardReadIndex>;
 template class SingleShortReadSet<RandomIndex>;
 template class ReadSetPacBio<StandardReadIndex>;
 template class ReadSetPacBio<RandomIndex>;
-template class ShortPairedReadSet<StandardPairedReadIndex>;
+template class ShortPairedReadSet<StandardReadIndex>;
+template class ShortPairedReadSet<RandomIndex>;
 

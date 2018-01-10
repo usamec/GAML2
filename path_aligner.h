@@ -6,7 +6,8 @@
 #include "path.h"
 
 // Handles caching of alignments
-// @TODO implement (i8)
+// @TODO implement caching (i8)
+
 class SingleShortReadPathAligner {
  public:
   SingleShortReadPathAligner() {}

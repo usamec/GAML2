@@ -48,6 +48,7 @@ inline bool operator<(const SingleReadAlignment& a, const SingleReadAlignment& b
 
 struct PairedReadAlignment {
   // @TODO paired read alignment structure
+  PairedReadAlignment() {}
 };
 
 // @TODO comparator for PairedReadAlignment
@@ -76,18 +77,6 @@ class RandomIndex {
   unordered_map<string, vector<pair<int,int>>> index_; 
 };
 
-class StandardPairedReadIndex {
-  // @TODO implement StandardReadIndexPaired
-  public:
-  explicit StandardPairedReadIndex(int k=13): k_(k) {}
-  void AddRead(int id, const pair<string, string>& data);
-
-  vector<CandidateReadPosition> GetReadCandidates(const string& genome) const;
-  int k_;
-  // @TODO premysliet, ako ma vyzerat index, ci tam treba dat viac parametrov (napriklad ci prvy alebo druhy z paired readu je tam)
-  // read_id, pos_in_read
-  unordered_map<string, vector<pair<int,int>>> index_;
-};
 
 template<class TIndex=RandomIndex>
 class SingleShortReadSet {
@@ -205,27 +194,40 @@ private:
   int minSufficientLength;
 };
 
-template<class TIndex=StandardPairedReadIndex>
+template<class TIndex=StandardReadIndex>
 class ShortPairedReadSet {
-  // @TODO create paired read set
+  // @TODO add testing
  public:
-  void LoadReadSet(const string& filename1, const string& filename2, const string& orientation) {
+  ShortPairedReadSet() {
+    reads_1_ = SingleShortReadSet<TIndex>();
+    reads_2_ = SingleShortReadSet<TIndex>();
+  }
+  void LoadReadSet(const string &filename1, const string &filename2) {
     ifstream is1(filename1), is2(filename2);
-    LoadReadSet(is1, is2, orientation);
+    LoadReadSet(is1, is2);
   }
 
-  void LoadReadSet(istream& is1, istream& is2, const string& orientation);
+  void LoadReadSet(istream &is1, istream &is2);
+
+  // Two sided get
+  vector<PairedReadAlignment> GetAlignments(const string &genome) const;
+
 
   size_t size() const {
-    return reads_.size();
+    return reads_1_.size();
   }
 
   const pair<string, string> operator[](int i) const {
-    return reads_[i];
+    return make_pair(reads_1_[i], reads_2_[i]);
   }
  private:
-  vector<pair<string, string> > reads_;
-  TIndex index_;
+  // One sided get
+  void GetAlignments(const string &genome, bool reversed, vector<PairedReadAlignment> &output) const;
+
+  bool ExtendAlignment(const CandidateReadPosition &candidate, const string &genome,
+                       PairedReadAlignment &al) const;
+
+  SingleShortReadSet<TIndex> reads_1_, reads_2_;
 };
 
 #endif

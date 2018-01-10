@@ -16,6 +16,7 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
   // @TODO add random seed to config? (i14)
   default_random_engine generator(47);
   ProbabilityChanges prob_changes;
+  // SO FAR SO GOOD
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
   cout << "starting probability: " << old_prob << endl;
   probability_calculator.CommitProbabilityChanges(prob_changes);

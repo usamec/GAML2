@@ -20,8 +20,8 @@ struct PairedProbabilityChange {
   vector<Path> added_paths;
   vector<Path> removed_paths;
 
-  vector<SingleReadAlignment> added_alignments;
-  vector<SingleReadAlignment> removed_alignments;
+  vector<PairedReadAlignment> added_alignments;
+  vector<PairedReadAlignment> removed_alignments;
 
   int new_paths_length;
 
