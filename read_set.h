@@ -49,9 +49,22 @@ inline bool operator<(const SingleReadAlignment& a, const SingleReadAlignment& b
 struct PairedReadAlignment {
   // @TODO paired read alignment structure
   PairedReadAlignment() {}
+  PairedReadAlignment(const SingleReadAlignment& al1_, const SingleReadAlignment& al2_,
+                      const string& orientation_, int insert_length_) :
+    al1(al1_), al2(al2_), orientation(orientation_),  insert_length(insert_length_){
+    read_id = al1.read_id;
+  }
+
+  SingleReadAlignment al1, al2;
+  string orientation;
+  int insert_length;
+  int read_id;
 };
 
-// @TODO comparator for PairedReadAlignment
+// needed only in EvalProbabilityChange for grouping same read info together (in sort(vector))
+inline bool operator<(const PairedReadAlignment& a, const PairedReadAlignment& b) {
+  return a.read_id < b.read_id;
+}
 
 class StandardReadIndex {
  public:
@@ -202,12 +215,12 @@ class ShortPairedReadSet {
     reads_1_ = SingleShortReadSet<TIndex>();
     reads_2_ = SingleShortReadSet<TIndex>();
   }
-  void LoadReadSet(const string &filename1, const string &filename2) {
+  void LoadReadSet(const string &filename1, const string &filename2, const string& orientation) {
     ifstream is1(filename1), is2(filename2);
-    LoadReadSet(is1, is2);
+    LoadReadSet(is1, is2, orientation);
   }
 
-  void LoadReadSet(istream &is1, istream &is2);
+  void LoadReadSet(istream &is1, istream &is2, const string& orientation);
 
   // Two sided get
   vector<PairedReadAlignment> GetAlignments(const string &genome) const;
@@ -216,6 +229,7 @@ class ShortPairedReadSet {
   size_t size() const {
     return reads_1_.size();
   }
+  string orientation_;
 
   const pair<string, string> operator[](int i) const {
     return make_pair(reads_1_[i], reads_2_[i]);

@@ -78,10 +78,14 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   return new_prob;
 }
 
+inline double SimpleReadProbModel (int dist, int read_length, double mismatch_prob) {
+  // @DONE corrected epsilon for e/3 (error from the GAML article)
+  return pow(mismatch_prob/3, dist) * pow(1 - mismatch_prob, read_length - dist);
+}
+
 double SingleReadProbabilityCalculator::GetAlignmentProb(
     int dist, int read_length) const {
-  // @TODO correct e for e/3 (error from the GAML article)
-  return pow(mismatch_prob_, dist) * pow(1 - mismatch_prob_, read_length - dist);
+  return SimpleReadProbModel(dist, read_length, mismatch_prob_);
 }
 
 void SingleReadProbabilityCalculator::CommitProbabilityChange(
@@ -143,21 +147,18 @@ double PairedReadProbabilityCalculator::GetPathsProbability(const vector<Path> &
   return EvalTotalProbabilityFromChange(prob_change);
 }
 void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityChange &prob_change) {
-  // @TODO implement
-
   for (size_t i = 0; i < prob_change.added_paths.size(); i++) {
     auto &p = prob_change.added_paths[i];
-    // SO FAR SO GOOD
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.added_alignments.insert(prob_change.added_alignments.end(), als.begin(), als.end());
-    printf("\rdone %d/%d evals", (int) i+1, (int) prob_change.added_paths.size());
+    printf("\r(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
     fflush(stdout);
   }
   for (size_t i = 0; i < prob_change.removed_paths.size(); i++) {
     auto &p = prob_change.removed_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.removed_alignments.insert(prob_change.removed_alignments.end(), als.begin(), als.end());
-    printf("\rdone %d/%d evals", (int) i+1, (int) prob_change.removed_paths.size());
+    printf("\r(removed_paths) done %d/%d evals;  %d alignments", (int) i+1, (int) prob_change.removed_paths.size(), (int) als.size());
     fflush(stdout);
   }
   printf("\n");
@@ -174,23 +175,24 @@ double PairedReadProbabilityCalculator::GetRealReadProbability(double prob, int 
 
 double PairedReadProbabilityCalculator::EvalTotalProbabilityFromChange(const PairedProbabilityChange &prob_change,
                                                                        bool write) {
-  // @TODO implement
-  // is not done at all
   double new_prob = total_log_prob_;
   new_prob += log(old_paths_length_);
   new_prob -= log(prob_change.new_paths_length);
 
-  /*
   // (read_id, prob_change)
   vector<pair<int, double>> changes;
   for (auto &a: prob_change.added_alignments) {
-    changes.push_back(make_pair(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    changes.push_back(make_pair(a.read_id, GetAlignmentProb(a)));
   }
+
   for (auto &a: prob_change.removed_alignments) {
-    changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a)));
   }
+
   sort(changes.begin(), changes.end());
-  int last_read_id = -47;
+
+  const int BLANK = -47;
+  int last_read_id = BLANK;
   double accumulated_prob = 0;
   for (auto &ch: changes) {
     if (ch.first != last_read_id && last_read_id != -47) {
@@ -212,7 +214,6 @@ double PairedReadProbabilityCalculator::EvalTotalProbabilityFromChange(const Pai
     }
   }
   if (write) total_log_prob_ = new_prob;
-   */
   return new_prob;
 }
 
@@ -226,9 +227,30 @@ int PairedReadProbabilityCalculator::GetPathsLength(const vector<Path> &paths) c
   return ret;
 }
 
-double PairedReadProbabilityCalculator::GetAlignmentProb(int dist, int read_length) const {
-  // @TODO implement
-  return 0;
+double pdf_normal(const double x, const double mean, const double std) {
+  static const double inv_sqrt_2pi = 0.3989422804014327;
+  const double a = (mean - x)/std;
+  return inv_sqrt_2pi / std * exp(-0.5 * a * a);
+}
+
+bool is_same_orientation (const string& o1, const string& o2) {
+  if (o1 == o2) {
+    return true;
+  }
+  else if ((o1 == "FF" || o1 == "RR") && (o2 == "FF" || o2 == "RR") ) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+double PairedReadProbabilityCalculator::GetAlignmentProb(const PairedReadAlignment& al) const {
+  if (! is_same_orientation(al.orientation, read_set_->orientation_)) {return 0;}
+  const double pp1 = SimpleReadProbModel(al.al1.dist, (*read_set_)[al.read_id].first.size(), mismatch_prob_);
+  const double pp2 = SimpleReadProbModel(al.al2.dist, (*read_set_)[al.read_id].second.size(), mismatch_prob_);
+
+  return pp1 * pp2 * pdf_normal(al.insert_length, mean_distance_, std_distance_);
 }
 
 GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
@@ -247,7 +269,7 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
 
   for (auto &paired_reads: config.paired_reads()) {
     ShortPairedReadSet<>* rs = new ShortPairedReadSet<>();
-    rs->LoadReadSet(paired_reads.filename1(), paired_reads.filename2());
+    rs->LoadReadSet(paired_reads.filename1(), paired_reads.filename2(), paired_reads.orientation());
     paired_read_sets_.push_back(rs);
     paired_read_calculators_.push_back(make_pair(
         PairedReadProbabilityCalculator(

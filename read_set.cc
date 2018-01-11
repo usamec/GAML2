@@ -376,7 +376,8 @@ void ReadSetPacBio<TIndex>::GetAlignments(Sequence& genome, bool reversed, vecto
 
 
 template<class TIndex>
-void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2) {
+void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2, const string& orientation) {
+  orientation_ = orientation;
   reads_1_.LoadReadSet(is1);
   reads_2_.LoadReadSet(is2);
   assert(reads_1_.size() == reads_2_.size());
@@ -384,13 +385,17 @@ void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2) {
 
 template<class TIndex>
 vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const string &genome) const {
-  // @TODO implement
-  // WE ARE HERE NOW
   vector<PairedReadAlignment> ret;
 
   // @TODO optimize genome inversion maybe?
   vector<SingleReadAlignment> als1 = reads_1_.GetAlignments(genome);
+  sort(als1.begin(), als1.end());
+  printf("; als1.size %d", (int)als1.size());
+
   vector<SingleReadAlignment> als2 = reads_2_.GetAlignments(genome);
+  sort(als2.begin(), als2.end());
+  printf("; als2.size %d", (int)als2.size());
+
   // assuming als1 and als2 are sorted by read position as primary key
 
   auto it1 = als1.begin();
@@ -402,19 +407,25 @@ vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const stri
   for (int current_read_id = 0; current_read_id < reads_1_.size() && it1 != als1.end() && it2 != als2.end(); current_read_id++) {
     current_als1.clear();
     current_als2.clear();
+    while (it1 != als1.end() && it1->read_id < current_read_id) it1++;
     while (it1 != als1.end() && it1->read_id == current_read_id) {
       current_als1.push_back(*it1);
       it1++;
     }
+    while (it2 != als2.end() && it2->read_id < current_read_id) it2++;
     while (it2 != als2.end() && it2->read_id == current_read_id) {
       current_als2.push_back(*it2);
       it2++;
     }
+    //printf("c12 %d,%d\t", (int)current_als1.size(), (int)current_als2.size());
     if (current_als1.size() > 0 && current_als2.size() > 0) {
       // cross check for finding paired alignments
-      for (int i = 0; i < current_als1.size(); i++) {
-        for (int j = 0; j < current_als2.size(); j++) {
-
+      string orient;
+      int insert_length;
+      for (auto &a1: current_als1) {
+        for (auto &a2: current_als2) {
+          tie(orient, insert_length) = eval_orientation(a1, reads_1_[current_read_id].size(), a2, reads_2_[current_read_id].size());
+            ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
         }
       }
     }
@@ -436,6 +447,55 @@ bool ShortPairedReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition &ca
                                                  PairedReadAlignment &al) const {
   // @TODO implement
   return false;
+}
+
+pair<string, int> eval_orientation(const SingleReadAlignment& als1, const int r1_len,
+                                   const SingleReadAlignment& als2, const int r2_len) {
+  // assume alignments are from the same contig/chromosome
+  // @TODO zratat dlzky zarovnani poriadne
+  // predpokladame, ze isenrt length zapocitava aj dlzky readov
+  // pri datach z Illumina predpokladame, ze nie su skoro ziadne indely -> dlzka zarovania ~~ dlzka readu
+  const int b1 = als1.genome_pos;
+  const int b2 = als2.genome_pos;
+  // @TODO eval ends correctly (get data from Extendalignment() function
+  // half-open intervals
+  const int e1 = als1.genome_pos + r1_len;
+  const int e2 = als2.genome_pos + r2_len;
+
+  string orientation;
+  const int lowest = min(b1, b2), highest = max(e1, e2);
+  const int insert_length = highest - lowest;
+
+
+  if (!als1.reversed && als2.reversed) {
+    // FR or RF
+    if (b1 <= b2 && e1 <= e2) {
+      orientation = "FR";
+    }
+    if (b2 <= b1 && e2 <= e1) {
+      orientation = "RF";
+    }
+    else {
+      orientation = "";
+    }
+  }
+  if (als1.reversed && !als2.reversed) {
+    // FR or RF
+    if (b1 <= b2 && e1 <= e2) {
+      orientation = "RF";
+    }
+    if (b2 <= b1 && e2 <= e1) {
+      orientation = "FR";
+    }
+    else {
+      orientation = "";
+    }
+  }
+  else {
+    orientation = "FF";
+  }
+
+  return make_pair(orientation, insert_length);
 }
 
 template class SingleShortReadSet<StandardReadIndex>;

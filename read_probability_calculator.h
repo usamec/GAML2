@@ -135,7 +135,7 @@ class PairedReadProbabilityCalculator {
 
   int GetPathsLength(const vector<Path>& paths) const;
 
-  double GetAlignmentProb(int dist, int read_length) const;
+  double GetAlignmentProb(const PairedReadAlignment& al) const;
 
   ShortPairedReadSet<>* read_set_;
   PairedReadPathAligner path_aligner_;
