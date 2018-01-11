@@ -129,7 +129,10 @@ double PairedReadProbabilityCalculator::InitTotalLogProb() {
   return ret;
 }
 void PairedReadProbabilityCalculator::CommitProbabilityChange(const PairedProbabilityChange &prob_change) {
-  // @TODO implement PairedReadProbabilitycalculator::CommitProbabilityChange
+  EvalTotalProbabilityFromChange(prob_change, true);
+  old_paths_ = prob_change.new_paths;
+  old_paths_length_ = prob_change.new_paths_length;
+
 }
 double PairedReadProbabilityCalculator::GetPathsProbability(const vector<Path> &paths,
                                                             PairedProbabilityChange &prob_change) {
@@ -154,6 +157,7 @@ void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityCha
     printf("\r(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
     fflush(stdout);
   }
+  printf("\n");
   for (size_t i = 0; i < prob_change.removed_paths.size(); i++) {
     auto &p = prob_change.removed_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
@@ -317,7 +321,7 @@ void GlobalProbabilityCalculator::CommitProbabilityChanges(
   }
 
   assert(prob_changes.paired_read_changes.size() == paired_read_calculators_.size());
-  for (size_t i = 0; i < single_read_calculators_.size(); i++) {
+  for (size_t i = 0; i < paired_read_calculators_.size(); i++) {
     paired_read_calculators_[i].first.CommitProbabilityChange(prob_changes.paired_read_changes[i]);
   }
 }

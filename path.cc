@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
   vector<Path> ret;
