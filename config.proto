@@ -32,7 +32,10 @@ message Config {
     // filename is relative to executing directory
     required string starting_graph = 1;
     optional int32 big_nodes_threshold = 8 [default = 500];
-    optional string output_file = 3 [default = 'output.fasta'];
+    optional string output_file = 3 [default = 'output_gaml.fasta'];
+    optional string log_file = 9 [default = 'gaml.log'];
+    // how often should program flush current solution to the output file (once in X iterations)
+    optional int32 output_flush_freq = 10 [default = 100];
 
     // Annealing settings: Temperature at iteration n is t0 / (log(n/n_divisor + 1))
     optional double t0 = 4 [default = 0.08];

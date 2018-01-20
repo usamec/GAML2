@@ -53,6 +53,11 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
       probability_calculator.CommitProbabilityChanges(prob_changes);
     }
     cout << endl << PathsToDebugString(new_paths) << endl << endl;
+
+    if (it_num % gaml_config.output_flush_freq() == 0) {
+      ofstream of(gaml_config.output_file());
+      PathsToFasta(paths, of);
+    }
   }
 
   ofstream of(gaml_config.output_file());
