@@ -154,7 +154,7 @@ void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityCha
     auto &p = prob_change.added_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.added_alignments.insert(prob_change.added_alignments.end(), als.begin(), als.end());
-    printf("\r(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
+    printf("\n(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
     fflush(stdout);
   }
   printf("\n");
@@ -162,7 +162,7 @@ void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityCha
     auto &p = prob_change.removed_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.removed_alignments.insert(prob_change.removed_alignments.end(), als.begin(), als.end());
-    printf("\r(removed_paths) done %d/%d evals;  %d alignments", (int) i+1, (int) prob_change.removed_paths.size(), (int) als.size());
+    printf("\nremoved_paths) done %d/%d evals;  %d alignments", (int) i+1, (int) prob_change.removed_paths.size(), (int) als.size());
     fflush(stdout);
   }
   printf("\n");
