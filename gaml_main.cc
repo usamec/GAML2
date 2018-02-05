@@ -11,14 +11,16 @@
 #include <cmath>
 #include <random>
 
+
 void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
                          const Config& gaml_config, vector<Path>& paths) {
   // @TODO add random seed to config? (i14)
   default_random_engine generator(47);
+  
   ProbabilityChanges prob_changes;
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
   cout << "starting probability: " << old_prob << endl;
-  // SO FAR SO GOOD
+
   probability_calculator.CommitProbabilityChanges(prob_changes);
 
   cout << PathsToDebugString(paths) << endl;
@@ -54,14 +56,39 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
     }
     cout << endl << PathsToDebugString(new_paths) << endl << endl;
 
+    // continual output
     if (it_num % gaml_config.output_flush_freq() == 0) {
       ofstream of(gaml_config.output_file());
       PathsToFasta(paths, of);
     }
   }
 
+  // final output
   ofstream of(gaml_config.output_file());
   PathsToFasta(paths, of);
+}
+
+void global_run_logging(const string& log_filename, int argc, char** argv) {
+  fstream fs;
+  fs.open(log_filename, fstream::out | fstream::app);
+  fs << "Running GAML2..." << endl;
+  const auto ctt = time(0);
+  fs << "TIMESTAMP: " << asctime(localtime(&ctt)); // contains \n symbol
+  fs << "COMMAND: ";
+  for (int i = 0; i < argc; i++) {
+    fs << argv[i] << " ";
+  }
+  fs << endl;
+
+  fstream cfg_file;
+  cfg_file.open(argv[1], fstream::in);
+  string buff = "x";
+  while (cfg_file >> buff) {
+    fs << "\t" << buff << endl;
+  }
+
+  cfg_file.close();
+  fs.close();
 }
 
 int main(int argc, char** argv) {
@@ -70,6 +97,8 @@ int main(int argc, char** argv) {
 
   Config gaml_config;
   google::protobuf::TextFormat::Parse(&config_stream, &gaml_config);
+
+  global_run_logging(gaml_config.global_run_log_file(), argc, argv);
 
   cout << gaml_config.starting_graph() << endl; 
 
