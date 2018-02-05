@@ -20,7 +20,9 @@ void signalHandler(int signum) {
 void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
                          const Config& gaml_config, vector<Path>& paths) {
   // @TODO add random seed to config? (i14)
-  default_random_engine generator(47);
+  const int random_seed = 47;
+  cout << "random seed: " << random_seed << endl;
+  default_random_engine generator(random_seed);
   
   ProbabilityChanges prob_changes;
   double old_prob = probability_calculator.GetPathsProbability(paths, prob_changes);
