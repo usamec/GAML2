@@ -10,7 +10,12 @@
 #include <fstream>
 #include <cmath>
 #include <random>
+#include <csignal>
 
+bool NOT_SIGINTED = true;
+void signalHandler(int signum) {
+  NOT_SIGINTED = false;
+}
 
 void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
                          const Config& gaml_config, vector<Path>& paths) {
@@ -25,7 +30,7 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
 
   cout << PathsToDebugString(paths) << endl;
   MoveConfig move_config;
-  for (int it_num = 1; it_num <= gaml_config.num_iterations(); it_num++) {
+  for (int it_num = 1; it_num <= gaml_config.num_iterations() && NOT_SIGINTED; it_num++) {
     double T = gaml_config.t0() / log(it_num / gaml_config.n_divisor() + 1);
     cout << "Iter: " << it_num << " T: " << T << endl;
 
@@ -92,6 +97,9 @@ void global_run_logging(const string& log_filename, int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+  // Adding correct handling of Ctrl+C signal (SIGINT)
+  signal(SIGINT, signalHandler);
+
   ifstream config_file(argv[1]);
   google::protobuf::io::IstreamInputStream config_stream(&config_file);
 
