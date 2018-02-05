@@ -1,5 +1,5 @@
 message SingleReadSet {
-    // filename is relative to executing directory
+    // filename is relative to executing directory (fastq file)
     required string filename = 1;
     optional double mismatch_prob = 2 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
@@ -10,9 +10,9 @@ message SingleReadSet {
 }
 
 message PairedReadSet {
-    // filename is relative to executing directory
+    // filename is relative to executing directory (fastq file)
     required string filename1 = 1;
-    // filename is relative to executing directory
+    // filename is relative to executing directory (fastq file)
     required string filename2 = 8;
     required double mean_distance = 9;
     required double std_distance = 10;
@@ -33,6 +33,7 @@ message Config {
     required string starting_graph = 1;
     optional int32 big_nodes_threshold = 8 [default = 500];
     optional string output_file = 3 [default = 'output_gaml.fasta'];
+    // log of the last execution
     optional string log_file = 9 [default = 'gaml.log'];
     // log of executions (dump of config file and time stamp)
     optional string global_run_log_file = 11 [default = 'gaml_runs.log'];
