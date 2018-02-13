@@ -38,7 +38,7 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
 
     vector<Path> new_paths;
     bool accept_high_prob;
-    MakeMove(paths, new_paths, move_config, accept_high_prob);
+    MakeMove(paths, new_paths, move_config, probability_calculator, accept_high_prob);
     double new_prob = probability_calculator.GetPathsProbability(new_paths, prob_changes);
     cout << new_prob;
 

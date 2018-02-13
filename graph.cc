@@ -73,6 +73,9 @@ vector<Node*> Graph::GetBigNodes(int threshold) const {
   return ret;
 }
 
+
+// BFS but ignoring big nodes (based on threshold)?
+// + ignoring reversed complement nodes
 vector<Node*> Graph::ReachForwardWithThreshold(Node* start, int threshold) const {
   unordered_set<int> visited;
   queue<Node*> fr;
@@ -88,6 +91,7 @@ vector<Node*> Graph::ReachForwardWithThreshold(Node* start, int threshold) const
       if (nx->IsBig(threshold)) {
         continue;
       }
+      // unordered_set::count := # of occurences in the set (may be 0 or 1)
       if (visited.count(nx->id_)) {
         continue;
       }
@@ -99,6 +103,7 @@ vector<Node*> Graph::ReachForwardWithThreshold(Node* start, int threshold) const
   return ret;
 }
 
+// BFS but ignoring big nodes (based on threshold)?
 vector<Node*> Graph::ReachLocalWithThreshold(Node* start, int threshold) const {
   unordered_set<int> visited;
   queue<Node*> fr;
@@ -134,5 +139,30 @@ vector<Node*> Graph::ReachLocalWithThreshold(Node* start, int threshold) const {
     }
   }
 
+  return ret;
+}
+
+// https://www.wikiwand.com/en/Drainage_basin
+// BFS on in-endges
+// get nodes for with the given node is reachable
+vector<Node*> Graph::GetDrainageBasinForNode(Node* target) {
+  unordered_set<int> visited_ids;
+  queue<Node*> Q;
+  Q.push(target);
+  visited_ids.insert(target->id_);
+
+  vector<Node*> ret;
+
+  while (!Q.empty()) {
+    Node* x = Q.front();
+    Q.pop();
+    ret.push_back(x);
+
+    for (auto &px: x->prev_) {
+      if (visited_ids.count(px->id_) > 0) continue;
+      Q.push(px);
+      visited_ids.insert(px->id_);
+      }
+    }
   return ret;
 }

@@ -27,13 +27,15 @@ class Path {
   void AppendPathWithGap(const Path &p, int gap_length, int p_start=0);
 
   void Reverse();
-  Path GetReverse();
+  Path GetReverse() const;
 
   string ToDebugString() const;
 
   string ToString(bool with_endings=false) const;
 
   bool IsSame(const Path& p) const;
+
+  bool isDisjoint(const Path& p) const;
 
   bool operator==(const Path &p) const {
     return nodes_ == p.nodes_;

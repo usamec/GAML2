@@ -9,6 +9,7 @@ message SingleReadSet {
     optional double weight = 7 [default = 1];
 }
 
+
 message PairedReadSet {
     // filename is relative to executing directory (fastq file)
     required string filename1 = 1;

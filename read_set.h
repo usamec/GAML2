@@ -225,6 +225,9 @@ class ShortPairedReadSet {
   // Two sided get
   vector<PairedReadAlignment> GetAlignments(const string &genome) const;
 
+  // Two sided get
+  vector<SingleReadAlignment> GetPartAlignments(const string &genome, const int part) const;
+
 
   size_t size() const {
     return reads_1_.size();

@@ -101,12 +101,13 @@ class PairedReadProbabilityCalculator {
       double penalty_constant,
       int penalty_step,
       double mean_distance,
-      double std_distance
+      double std_distance,
+      bool use_as_advice
   ): read_set_(read_set), path_aligner_(read_set), mismatch_prob_(mismatch_prob),
      min_prob_start_(min_prob_start), min_prob_per_base_(min_prob_per_base),
      penalty_constant_(penalty_constant), penalty_step_(penalty_step),
      old_paths_length_(1), mean_distance_(mean_distance),
-     std_distance_(std_distance) {
+     std_distance_(std_distance), use_as_advice_(use_as_advice) {
     read_probs_.resize(read_set_->size());
     total_log_prob_ = InitTotalLogProb();
 
@@ -118,6 +119,14 @@ class PairedReadProbabilityCalculator {
   // Call this after you are happy with current result (i.e. you got better
   // probability)
   void CommitProbabilityChange(const PairedProbabilityChange& prob_change);
+
+
+  bool use_as_advice_;
+  PairedReadPathAligner path_aligner_;
+  // Evals change with filled added and removed paths
+  void EvalProbabilityChange(PairedProbabilityChange& prob_change, bool debug_output=true);
+  // Get total probability from change and cached data
+  double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false);
  private:
 
   double InitTotalLogProb();
@@ -127,18 +136,15 @@ class PairedReadProbabilityCalculator {
   // max(min_prob, prob)
   double GetRealReadProbability(double prob, int read_id) const;
 
-  // Evals change with filled added and removed paths
-  void EvalProbabilityChange(PairedProbabilityChange& prob_change);
 
-  // Get total probability from change and cached data
-  double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false);
+
+
 
   int GetPathsLength(const vector<Path>& paths) const;
 
   double GetAlignmentProb(const PairedReadAlignment& al) const;
 
   ShortPairedReadSet<>* read_set_;
-  PairedReadPathAligner path_aligner_;
   double mismatch_prob_;
   double min_prob_start_;
   double min_prob_per_base_;
@@ -166,13 +172,15 @@ class GlobalProbabilityCalculator {
   // probability)
   void CommitProbabilityChanges(const ProbabilityChanges &prob_changes);
 
- private:
   vector<SingleShortReadSet<>*> single_short_read_sets_;
   vector<ShortPairedReadSet<>*> paired_read_sets_;
   // (prob calculator, weight)
   // @TODO do you speak polymorphism? (vytvorit template na read calculatory) (i3)
   vector<pair<SingleReadProbabilityCalculator, double>> single_read_calculators_;
   vector<pair<PairedReadProbabilityCalculator, double>> paired_read_calculators_;
+
+ private:
+
 
 };
 

@@ -14,3 +14,9 @@ vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentsForPath(const Pa
   ret = paired_read_set_->GetAlignments(genome);
   return ret;
 }
+vector<SingleReadAlignment> PairedReadPathAligner::GetPartAlignmentsForPath(const Path &p, int part) {
+  vector<SingleReadAlignment> ret;
+  string genome = p.ToString(true);
+  ret = paired_read_set_->GetPartAlignments(genome, part);
+  return ret;
+}

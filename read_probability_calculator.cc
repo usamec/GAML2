@@ -149,23 +149,23 @@ double PairedReadProbabilityCalculator::GetPathsProbability(const vector<Path> &
 
   return EvalTotalProbabilityFromChange(prob_change);
 }
-void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityChange &prob_change) {
+void PairedReadProbabilityCalculator::EvalProbabilityChange(PairedProbabilityChange &prob_change, bool debug_output) {
   for (size_t i = 0; i < prob_change.added_paths.size(); i++) {
     auto &p = prob_change.added_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.added_alignments.insert(prob_change.added_alignments.end(), als.begin(), als.end());
-    printf("\n(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
-    fflush(stdout);
+    if (debug_output) printf("\n(added_paths) done %d/%d evals; %d alignments", (int) i+1, (int) prob_change.added_paths.size(), (int) als.size());
+    if (debug_output) fflush(stdout);
   }
-  printf("\n");
+  if (debug_output) printf("\n");
   for (size_t i = 0; i < prob_change.removed_paths.size(); i++) {
     auto &p = prob_change.removed_paths[i];
     auto als = path_aligner_.GetAlignmentsForPath(p);
     prob_change.removed_alignments.insert(prob_change.removed_alignments.end(), als.begin(), als.end());
-    printf("\nremoved_paths) done %d/%d evals;  %d alignments", (int) i+1, (int) prob_change.removed_paths.size(), (int) als.size());
-    fflush(stdout);
+    if (debug_output) printf("\n(removed_paths) done %d/%d evals;  %d alignments", (int) i+1, (int) prob_change.removed_paths.size(), (int) als.size());
+    if (debug_output) fflush(stdout);
   }
-  printf("\n");
+  if (debug_output) printf("\n");
 }
 
 double PairedReadProbabilityCalculator::GetMinLogProbability(int read_length) const {
@@ -284,7 +284,8 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
             paired_reads.penalty_constant(),
             paired_reads.penalty_step(),
             paired_reads.mean_distance(),
-            paired_reads.std_distance()
+            paired_reads.std_distance(),
+            paired_reads.use_as_advice()
         ),
         paired_reads.weight()
     ));

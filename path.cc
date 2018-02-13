@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <unordered_set>
 #include <iostream>
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
@@ -14,6 +15,7 @@ vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
   return ret;
 }
 
+// nodes have to be adjacent (in the same direction) in the graph
 bool Path::CheckPath() const {
   for (size_t i = 0; i + 1 < nodes_.size(); i++) {
     if (nodes_[i]->IsGap() || nodes_[i+1]->IsGap()) continue;
@@ -67,7 +69,7 @@ void Path::Reverse() {
   nodes_ = nodes_new;
 }
 
-Path Path::GetReverse() {
+Path Path::GetReverse() const {
   vector<Node*> nodes_new;
   for (int i = nodes_.size() - 1; i >= 0; i--) {
     nodes_new.push_back(nodes_[i]->rc_);
@@ -123,6 +125,19 @@ Path Path::CutAt(int pos, int big_node_threshold) {
   Path p2(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()));
   nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + part1_end + 1);
   return p2;
+}
+bool Path::isDisjoint(const Path &p) const {
+  // complementary nodes also not allowed
+  unordered_set<int> nodes_ids;
+  for (auto node: nodes_) {
+    nodes_ids.insert(node->id_);
+  }
+  for (auto node: p.nodes_) {
+    if (nodes_ids.count(node->id_) > 0) return false;
+    // check for complementar
+    if (nodes_ids.count(node->rc_->id_) > 0) return false;
+  }
+  return true;
 }
 
 void PathsToFasta(const vector<Path>& paths, ostream &of) {

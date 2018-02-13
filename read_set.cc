@@ -448,6 +448,20 @@ bool ShortPairedReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition &ca
   // @TODO implement
   return false;
 }
+template<class TIndex>
+vector<SingleReadAlignment> ShortPairedReadSet<TIndex>::GetPartAlignments(const string &genome, int part) const {
+  vector<SingleReadAlignment> ret;
+
+  if (part == 0) {
+    ret = reads_1_.GetAlignments(genome);
+  }
+  if (part == 1) {
+    ret = reads_2_.GetAlignments(genome);
+  }
+
+  sort(ret.begin(), ret.end());
+  return ret;
+}
 
 pair<string, int> eval_orientation(const SingleReadAlignment& als1, const int r1_len,
                                    const SingleReadAlignment& als2, const int r2_len) {
