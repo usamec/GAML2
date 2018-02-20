@@ -21,6 +21,10 @@ class SingleShortReadPathAligner {
   SingleShortReadSet<>* single_short_read_set_;
 
  private:
+
+  vector<SingleReadAlignment> GetAlignmentForPathNoCache(const Path& p);
+  vector<SingleReadAlignment> GetAlignmentForPathWithCache(const Path& p);
+
   const static int MAX_CACHE_SIZE = 0;
   long long next_usage_t_ = 0;
   vector<tuple<Path, vector<SingleReadAlignment>, long long>> cache_;
@@ -82,6 +86,9 @@ class PairedReadPathAligner {
   SingleShortReadPathAligner left_aligner_, right_aligner_;
 
  private:
+  vector<PairedReadAlignment> GetAlignmentForPathNoCache(const Path& p);
+  vector<PairedReadAlignment> GetAlignmentForPathWithCache(const Path& p);
+
   const static int MAX_CACHE_SIZE = 0;
   long long next_usage_t_ = 0;
   vector<tuple<Path, vector<PairedReadAlignment>, long long>> cache_;

@@ -1,6 +1,15 @@
 #include "path_aligner.h"
 
 vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentsForPath(const Path& p) {
+  return GetAlignmentForPathNoCache(p);
+}
+vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentForPathNoCache(const Path &p) {
+  vector<SingleReadAlignment> ret;
+  string genome = p.ToString(true);
+  ret = single_short_read_set_->GetAlignments(genome);
+  return ret;
+}
+vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentForPathWithCache(const Path &p) {
   vector<SingleReadAlignment> ret;
 
   const int pos = GetAlignmentPos(p);
@@ -16,6 +25,16 @@ vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentsForPath(con
   return ret;
 }
 vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentsForPath(const Path &p) {
+  return GetAlignmentForPathNoCache(p);
+}
+vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathNoCache(const Path& p) {
+  vector<PairedReadAlignment> ret;
+  string genome = p.ToString(true);
+  ret = paired_read_set_->GetAlignments(genome);
+  return ret;
+}
+
+vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathWithCache(const Path& p) {
   vector<PairedReadAlignment> ret;
 
   const int pos = GetAlignmentPos(p);
@@ -70,6 +89,7 @@ vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentsForPath(const Pa
 
   return ret;
 }
+
 vector<SingleReadAlignment> PairedReadPathAligner::GetPartAlignmentsForPath(const Path &p, int part) {
   vector<SingleReadAlignment> ret;
   if (part == 0) {
