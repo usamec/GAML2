@@ -8,7 +8,7 @@ int FindPathWithSameEnding(vector<Path>& paths, int pi) {
   for (size_t i = 0; i < paths.size(); i++) {
     auto &p = paths[i];
     auto rp = p.GetReverse();
-    if (i == pi) continue;
+    if ((int)i == pi) continue;
     if (p[0] == paths[pi].back()) {
       return i;
     }
@@ -348,7 +348,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
     pp_change.removed_paths.push_back(start_path);
 
     pc.EvalProbabilityChange(pp_change, false);
-    double score = pc.EvalTotalProbabilityFromChange(pp_change);
+    double score = pc.EvalTotalProbabilityFromChange(pp_change, false);
     cerr << "Path (score: "<< score << "): " << np.ToDebugString() << endl;
     if (score > best_score) {
       best_score = score;
@@ -402,7 +402,7 @@ bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfi
              bool& accept_higher_prob) {
   // @TODO add probs of moves into config
 
-  int move = rand()%21;
+  int move = rand()%20;
   if (move < 10) {
     accept_higher_prob = false;
     return ExtendPathsRandomly(paths, out_paths, config);

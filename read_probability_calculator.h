@@ -126,7 +126,7 @@ class PairedReadProbabilityCalculator {
   // Evals change with filled added and removed paths
   void EvalProbabilityChange(PairedProbabilityChange& prob_change, bool debug_output=true);
   // Get total probability from change and cached data
-  double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false);
+  double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false) ;
  private:
 
   double InitTotalLogProb();

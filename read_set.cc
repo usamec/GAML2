@@ -384,17 +384,17 @@ void ShortPairedReadSet<TIndex>::LoadReadSet(istream &is1, istream &is2, const s
 }
 
 template<class TIndex>
-vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const string &genome) const {
+vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const string &genome, const bool debug_output) const {
   vector<PairedReadAlignment> ret;
 
   // @TODO optimize genome inversion maybe?
   vector<SingleReadAlignment> als1 = reads_1_.GetAlignments(genome);
   sort(als1.begin(), als1.end());
-  printf("; als1.size %d", (int)als1.size());
+  if (debug_output) printf("; als1.size %d", (int)als1.size());
 
   vector<SingleReadAlignment> als2 = reads_2_.GetAlignments(genome);
   sort(als2.begin(), als2.end());
-  printf("; als2.size %d", (int)als2.size());
+  if (debug_output) printf("; als2.size %d", (int)als2.size());
 
   // assuming als1 and als2 are sorted by read position as primary key
 
@@ -425,7 +425,7 @@ vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const stri
       for (auto &a1: current_als1) {
         for (auto &a2: current_als2) {
           tie(orient, insert_length) = eval_orientation(a1, reads_1_[current_read_id].size(), a2, reads_2_[current_read_id].size());
-            ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
+          ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
         }
       }
     }

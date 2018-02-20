@@ -91,7 +91,7 @@ class RandomIndex {
 };
 
 
-template<class TIndex=RandomIndex>
+template<class TIndex=StandardReadIndex>
 class SingleShortReadSet {
   class VisitedPositions {
    vector<vector<int>> vp_;
@@ -223,7 +223,7 @@ class ShortPairedReadSet {
   void LoadReadSet(istream &is1, istream &is2, const string& orientation);
 
   // Two sided get
-  vector<PairedReadAlignment> GetAlignments(const string &genome) const;
+  vector<PairedReadAlignment> GetAlignments(const string &genome, const bool debug_output=true) const;
 
   // Two sided get
   vector<SingleReadAlignment> GetPartAlignments(const string &genome, const int part) const;
@@ -237,14 +237,16 @@ class ShortPairedReadSet {
   const pair<string, string> operator[](int i) const {
     return make_pair(reads_1_[i], reads_2_[i]);
   }
+  SingleShortReadSet<TIndex> reads_1_, reads_2_;
  private:
   // One sided get
   void GetAlignments(const string &genome, bool reversed, vector<PairedReadAlignment> &output) const;
 
   bool ExtendAlignment(const CandidateReadPosition &candidate, const string &genome,
                        PairedReadAlignment &al) const;
-
-  SingleShortReadSet<TIndex> reads_1_, reads_2_;
 };
+
+pair<string, int> eval_orientation(const SingleReadAlignment& als1, const int r1_len,
+                                   const SingleReadAlignment& als2, const int r2_len);
 
 #endif
