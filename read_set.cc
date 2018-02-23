@@ -7,7 +7,8 @@
 
 void StandardReadIndex::AddRead(int id, const string& data) {
   for (size_t i = 0; i + k_ <= data.size(); i++) {
-    index_[data.substr(i, k_)].push_back(make_pair(id, i));
+    //index_[data.substr(i, k_)].push_back(make_pair(id, i));
+    index_[data.substr(i, k_)].emplace_back(id, i);
   }
 }
 
@@ -26,7 +27,8 @@ vector<CandidateReadPosition> StandardReadIndex::GetReadCandidates(const string&
         continue;
       }
       found_cands.insert(make_pair(e.first, coord));
-      ret.push_back(CandidateReadPosition(e.first, i, e.second));
+      //ret.push_back(CandidateReadPosition(e.first, i, e.second));
+      ret.emplace_back(e.first, i, e.second);
     }
   }
   return ret;
@@ -36,7 +38,8 @@ void RandomIndex::AddRead(int id, const string& data) {
   if ((int) data.size() < k_) return;
   for (int i = 0; i < 3; i++) {
     int p = rand()%(data.size() - k_ + 1);
-    index_[data.substr(p, k_)].push_back(make_pair(id, p));
+    //index_[data.substr(p, k_)].push_back(make_pair(id, p));
+    index_[data.substr(p, k_)].emplace_back(id, p);
   }
 }
 
@@ -55,7 +58,8 @@ vector<CandidateReadPosition> RandomIndex::GetReadCandidates(const string& genom
         continue;
       }
       found_cands.insert(make_pair(e.first, coord));
-      ret.push_back(CandidateReadPosition(e.first, i, e.second));
+      //ret.push_back(CandidateReadPosition(e.first, i, e.second));
+      ret.emplace_back(e.first, i, e.second);
     }
   }
   return ret;
@@ -156,7 +160,8 @@ bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& ca
   // distance, (read_pos, genome_pos)
   static deque<pair<int, pair<int, int>>> fr;
   fr.clear();
-  fr.push_back(make_pair(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1)));
+  //fr.push_back(make_pair(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1)));
+  fr.emplace_back(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1));
 
   while (!fr.empty()) {
     auto x = fr.front();
@@ -211,7 +216,8 @@ bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& ca
   max_err -= total_errs;
 
   fr.clear();
-  fr.push_back(make_pair(0, make_pair(candidate.read_pos, candidate.genome_pos)));
+  //fr.push_back(make_pair(0, make_pair(candidate.read_pos, candidate.genome_pos)));
+  fr.emplace_back(0, make_pair(candidate.read_pos, candidate.genome_pos));
   while (!fr.empty()) {
     auto x = fr.front();
     fr.pop_front();
@@ -425,7 +431,8 @@ vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const stri
       for (auto &a1: current_als1) {
         for (auto &a2: current_als2) {
           tie(orient, insert_length) = eval_orientation(a1, reads_1_[current_read_id].size(), a2, reads_2_[current_read_id].size());
-          ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
+          //ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
+          ret.emplace_back(a1, a2, orient, insert_length);
         }
       }
     }

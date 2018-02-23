@@ -291,7 +291,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
       Path p = SampleRandomWalk(ye, second_pool_ids, desired_targets, MAX_CONN_LENGTH);
       if (p.back() == xb || p.back() == xer) {
         bool is_new_path = true;
-        for (auto ex_p: possible_connections) {
+        for (const auto ex_p: possible_connections) {
           if (ex_p.IsSameNoReverse(p)) {
             is_new_path = false;
             break;
@@ -343,6 +343,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
       }
     }
 
+    // @TODO check for correct initialising of pp_change
     PairedProbabilityChange pp_change;
     pp_change.added_paths.push_back(np);
     pp_change.removed_paths.push_back(target_path);
@@ -380,7 +381,7 @@ bool JoinWithAdvice(const vector<Path>& paths, vector<Path>& out_paths,
     }
   }
 
-  if (available_paired_read_sets.size() == 0) {
+  if (available_paired_read_sets.empty()) {
     return false;
   }
 

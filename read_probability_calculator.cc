@@ -47,10 +47,12 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   // (read_id, prob_change)
   vector<pair<int, double>> changes;
   for (auto &a: prob_change.added_alignments) {
-    changes.push_back(make_pair(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    //changes.push_back(make_pair(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    changes.emplace_back(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
   }
   for (auto &a: prob_change.removed_alignments) {
-    changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    //changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
+    changes.emplace_back(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
   }
   sort(changes.begin(), changes.end());
   int last_read_id = -47;
@@ -184,13 +186,15 @@ double PairedReadProbabilityCalculator::EvalTotalProbabilityFromChange(const Pai
   new_prob -= log(prob_change.new_paths_length);
 
   // (read_id, prob_change)
-  vector<pair<int, double>> changes;
+  vector< pair<int, double> > changes;
   for (auto &a: prob_change.added_alignments) {
-    changes.push_back(make_pair(a.read_id, GetAlignmentProb(a)));
+    //changes.push_back(make_pair(a.read_id, GetAlignmentProb(a)));
+    changes.emplace_back(a.read_id, GetAlignmentProb(a));
   }
 
   for (auto &a: prob_change.removed_alignments) {
-    changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a)));
+    //changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a)));
+    changes.emplace_back(a.read_id, -GetAlignmentProb(a));
   }
 
   sort(changes.begin(), changes.end());

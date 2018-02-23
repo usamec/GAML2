@@ -81,7 +81,8 @@ vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathWithCache(
         for (auto &a1: current_als1) {
           for (auto &a2: current_als2) {
             tie(orient, insert_length) = eval_orientation(a1, (int)reads_1_[current_read_id].size(), a2, (int)reads_2_[current_read_id].size());
-            ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
+            //ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
+            ret.emplace_back(a1, a2, orient, insert_length);
           }
         }
       }
