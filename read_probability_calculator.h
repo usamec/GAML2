@@ -123,6 +123,8 @@ class PairedReadProbabilityCalculator {
 
   bool use_as_advice_;
   PairedReadPathAligner path_aligner_;
+  double mean_distance_;
+  double std_distance_;
   // Evals change with filled added and removed paths
   void EvalProbabilityChange(PairedProbabilityChange& prob_change, bool debug_output=true);
   // Get total probability from change and cached data
@@ -152,8 +154,8 @@ class PairedReadProbabilityCalculator {
   int penalty_step_;
   int old_paths_length_;
   double total_log_prob_;
-  double mean_distance_;
-  double std_distance_;
+  //double mean_distance_;
+  //double std_distance_;
 
   vector<double> read_probs_;
   vector<Path> old_paths_;

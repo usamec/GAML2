@@ -6,7 +6,7 @@
 class Path {
  public:
   Path() {}
-  Path(const vector<Node*> nodes) : nodes_(nodes) {}
+  explicit Path(const vector<Node*> nodes) : nodes_(nodes) {}
   vector<Node*> nodes_;
 
   Node*& operator[](size_t x) {
@@ -35,7 +35,12 @@ class Path {
 
   bool IsSame(const Path& p) const;
 
+  bool IsSameNoReverse(const Path& p) const;
+
   bool isDisjoint(const Path& p) const;
+
+  // check for disjoin but only for ends
+  bool isPartlyDisjoint(const Path &p, int dist) const;
 
   bool operator==(const Path &p) const {
     return nodes_ == p.nodes_;

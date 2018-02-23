@@ -1,7 +1,7 @@
 #include "path_aligner.h"
 
 vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentsForPath(const Path& p) {
-  return GetAlignmentForPathNoCache(p);
+  return GetAlignmentForPathWithCache(p);
 }
 vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentForPathNoCache(const Path &p) {
   vector<SingleReadAlignment> ret;
@@ -25,7 +25,7 @@ vector<SingleReadAlignment> SingleShortReadPathAligner::GetAlignmentForPathWithC
   return ret;
 }
 vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentsForPath(const Path &p) {
-  return GetAlignmentForPathNoCache(p);
+  return GetAlignmentForPathWithCache(p);
 }
 vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathNoCache(const Path& p) {
   vector<PairedReadAlignment> ret;
@@ -37,19 +37,25 @@ vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathNoCache(co
 vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathWithCache(const Path& p) {
   vector<PairedReadAlignment> ret;
 
+  // @DEBUG turn-off cahce-lookup
   const int pos = GetAlignmentPos(p);
+  //const int pos = -1;
+
   if (pos == -1) {
-    const vector<SingleReadAlignment> als1 = GetPartAlignmentsForPath(p, 0);
-    const vector<SingleReadAlignment> als2 = GetPartAlignmentsForPath(p, 1);
+    //cerr << "PAIRED ALIGNER: CACHE MISS " << cache_.size() << endl;
+    vector<SingleReadAlignment> als1 = GetPartAlignmentsForPath(p, 0);
+    vector<SingleReadAlignment> als2 = GetPartAlignmentsForPath(p, 1);
+    sort(als1.begin(), als1.end());
+    sort(als2.begin(), als2.end());
 
     // assuming als1 and als2 are sorted by read position as primary key
 
     auto it1 = als1.begin();
     auto it2 = als2.begin();
 
-    const auto &reads_1_ = left_aligner_.single_short_read_set_;
-    const auto &reads_2_ = right_aligner_.single_short_read_set_;
-    const int reads_1_size = reads_1_->size();
+    const auto &reads_1_ = *(left_aligner_.single_short_read_set_);
+    const auto &reads_2_ = *(right_aligner_.single_short_read_set_);
+    const auto reads_1_size = (int)reads_1_.size();
 
     // run through both vectors, find groups with equal read_id and do cross-check
     // for potential pairing (with respect to the assumed orientation)
@@ -68,22 +74,24 @@ vector<PairedReadAlignment> PairedReadPathAligner::GetAlignmentForPathWithCache(
         it2++;
       }
       //printf("c12 %d,%d\t", (int)current_als1.size(), (int)current_als2.size());
-      if (current_als1.size() > 0 && current_als2.size() > 0) {
+      if (!current_als1.empty() && !current_als2.empty()) {
         // cross check for finding paired alignments
         string orient;
         int insert_length;
         for (auto &a1: current_als1) {
           for (auto &a2: current_als2) {
-            tie(orient, insert_length) = eval_orientation(a1, reads_1_[current_read_id].size(), a2, reads_2_[current_read_id].size());
+            tie(orient, insert_length) = eval_orientation(a1, (int)reads_1_[current_read_id].size(), a2, (int)reads_2_[current_read_id].size());
             ret.push_back(PairedReadAlignment(a1, a2, orient, insert_length));
           }
         }
       }
     }
 
+    // @DEBUG re-open that stuff
     InsertAlignmentForPath(p, ret);
   }
   else {
+    //cerr << "PAIRED ALIGNER: CACHE HIT " << cache_.size() << endl;
     ret = GetCachedAlignmentByPos(pos);
   }
 

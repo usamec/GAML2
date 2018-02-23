@@ -100,6 +100,12 @@ bool Path::IsSame(const Path& p) const {
   return true;
 }
 
+bool Path::IsSameNoReverse(const Path& p) const {
+  if (p.nodes_.size() != nodes_.size()) return false;
+  if (p.nodes_ == nodes_) return true;
+  return false;
+}
+
 bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distance_threshold) {
   int added_distance = 0;
   int added_steps = 0;
@@ -137,6 +143,39 @@ bool Path::isDisjoint(const Path &p) const {
     // check for complementar
     if (nodes_ids.count(node->rc_->id_) > 0) return false;
   }
+  return true;
+}
+bool Path::isPartlyDisjoint(const Path &p, int dist) const {
+  // complementary nodes also not allowed
+  unordered_set<int> nodes_ids;
+
+  int len = 0;
+  for (size_t i = 0; i < nodes_.size() && len < dist; i++) {
+    const auto &node = nodes_[i];
+    nodes_ids.insert(node->id_);
+    len += node->str_.size();
+  }
+  len = 0;
+  for (size_t i = nodes_.size() - 1; i >= 0 && len < dist; i--) {
+    const auto &node = nodes_[i];
+    nodes_ids.insert(node->id_);
+    len += node->str_.size();
+  }
+
+  // checking begin and end of path p
+  len = 0;
+  for (size_t i = 0; i < p.nodes_.size() && len < dist; i++) {
+    const auto &node = p.nodes_[i];
+    if (nodes_ids.count(node->id_) > 0 || nodes_ids.count(node->rc_->id_) > 0) return false;
+    len += node->str_.size();
+  }
+  len = 0;
+  for (size_t i = p.nodes_.size() - 1; i >= 0 && len < dist; i--) {
+    const auto &node = p.nodes_[i];
+    if (nodes_ids.count(node->id_) > 0 || nodes_ids.count(node->rc_->id_) > 0) return false;
+    len += node->str_.size();
+  }
+
   return true;
 }
 

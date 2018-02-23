@@ -25,7 +25,7 @@ class SingleShortReadPathAligner {
   vector<SingleReadAlignment> GetAlignmentForPathNoCache(const Path& p);
   vector<SingleReadAlignment> GetAlignmentForPathWithCache(const Path& p);
 
-  const static int MAX_CACHE_SIZE = 0;
+  const static int MAX_CACHE_SIZE = 10000;
   long long next_usage_t_ = 0;
   vector<tuple<Path, vector<SingleReadAlignment>, long long>> cache_;
   void InsertAlignmentForPath(const Path& p, vector<SingleReadAlignment>& al) {
@@ -52,7 +52,7 @@ class SingleShortReadPathAligner {
     int res = -1;
     for (int i = 0; i < (int)cache_.size(); i++) {
       const auto t = cache_[i];
-      if (get<0>(t).IsSame(p)) {
+      if (get<0>(t).IsSameNoReverse(p)) {
         res = i;
         break;
       }
@@ -72,7 +72,6 @@ class PairedReadPathAligner {
  public:
   explicit PairedReadPathAligner() {}
   explicit PairedReadPathAligner(ShortPairedReadSet<>* paired_read_set): paired_read_set_(paired_read_set) {
-    // @TODO initialize single aligners
     left_aligner_ = SingleShortReadPathAligner(&(paired_read_set_->reads_1_));
     right_aligner_ = SingleShortReadPathAligner(&(paired_read_set_->reads_2_));
   }
@@ -89,7 +88,7 @@ class PairedReadPathAligner {
   vector<PairedReadAlignment> GetAlignmentForPathNoCache(const Path& p);
   vector<PairedReadAlignment> GetAlignmentForPathWithCache(const Path& p);
 
-  const static int MAX_CACHE_SIZE = 0;
+  const static int MAX_CACHE_SIZE = 10000;
   long long next_usage_t_ = 0;
   vector<tuple<Path, vector<PairedReadAlignment>, long long>> cache_;
   void InsertAlignmentForPath(const Path& p, vector<PairedReadAlignment>& al) {
@@ -116,7 +115,7 @@ class PairedReadPathAligner {
     int res = -1;
     for (int i = 0; i < (int)cache_.size(); i++) {
       const auto t = cache_[i];
-      if (get<0>(t).IsSame(p)) {
+      if (get<0>(t).IsSameNoReverse(p)) {
         res = i;
         break;
       }

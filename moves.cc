@@ -122,8 +122,9 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
 
   // exclude nondisjoint paths
   vector<int> disjoint_path_ids;
+  const int disjoint_length = (int)(pc.mean_distance_ + pc.std_distance_ * 3);
   for (int i = 0; i < (int)paths.size(); i++) {
-    if (start_path.isDisjoint(paths[i])) {
+    if (start_path.isPartlyDisjoint(paths[i], disjoint_length)) {
       disjoint_path_ids.push_back(i);
     }
   };
@@ -222,20 +223,20 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
   // target path: yb ----> ye. ybr := yb->rc_, yer := ye->rc_
   Node* xb = start_path.nodes_.front();
   Node* xe = start_path.nodes_.back();
-  Node* xbr = xb->rc_;
-  //Node* xer = xe->rc_;
+  //Node* xbr = xb->rc_;
+  Node* xer = xe->rc_;
   Node* yb = target_path.nodes_.front();
   Node* ye = target_path.nodes_.back();
-  Node* ybr = yb->rc_;
-  //Node* yer = ye->rc_;
+  //Node* ybr = yb->rc_;
+  Node* yer = ye->rc_;
 
-  // 4 possibilities: xe ---> (yb | ybr) ;  ye ---> ( xb | xbr)
+  // 4 possibilities: xe ---> (yb | yer) ;  ye ---> ( xb | xer)
   Graph* G = xb->graph_;
   const vector<Node*> yb_drb = G->GetDrainageBasinForNode(yb);
-  const vector<Node*> ybr_drb = G->GetDrainageBasinForNode(ybr);
+  const vector<Node*> yer_drb = G->GetDrainageBasinForNode(yer);
 
   const vector<Node*> xb_drb = G->GetDrainageBasinForNode(xb);
-  const vector<Node*> xbr_drb = G->GetDrainageBasinForNode(xbr);
+  const vector<Node*> xer_drb = G->GetDrainageBasinForNode(xer);
 
   //cerr << "yb_drb\t:: "; for(auto x: yb_drb) cerr << x->id_ << " "; cerr << endl;
   //cerr << "ybr_drb\t:: "; for(auto x: ybr_drb) cerr << x->id_ << " "; cerr << endl;
@@ -244,7 +245,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
 
   unordered_set<int> first_pool_ids, second_pool_ids;
 
-  for (const auto &A: {yb_drb, ybr_drb}) {
+  for (const auto &A: {yb_drb, yer_drb}) {
     if (find(A.begin(), A.end(), xe) != A.end()) {
       for (auto n: A) {
         first_pool_ids.insert(n->id_);
@@ -252,7 +253,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
     }
   }
 
-  for (const auto &A: {xb_drb, xbr_drb}) {
+  for (const auto &A: {xb_drb, xer_drb}) {
     if (find(A.begin(), A.end(), ye) != A.end()) {
       for (auto n: A) {
         second_pool_ids.insert(n->id_);
@@ -269,13 +270,13 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
   const int MAX_CONN_LENGTH = 5000; // bases, not nodes
 
   if (!first_pool_ids.empty()) {
-    unordered_set<int> desired_targets({yb->id_, ybr->id_});
+    unordered_set<int> desired_targets({yb->id_, yer->id_});
     for (int num = 0; num < SAMPLE_NUM; num++) {
       Path p = SampleRandomWalk(xe, first_pool_ids, desired_targets, MAX_CONN_LENGTH);
-      if (p.back() == yb || p.back() == ybr) {
+      if (p.back() == yb || p.back() == yer) {
         bool is_new_path = true;
         for (auto ex_p: possible_connections) {
-          if (ex_p.IsSame(p)) {
+          if (ex_p.IsSameNoReverse(p)) {
             is_new_path = false;
             break;
           }
@@ -285,13 +286,13 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
     }
   }
   if (!second_pool_ids.empty()) {
-    unordered_set<int> desired_targets({xb->id_, xbr->id_});
+    unordered_set<int> desired_targets({xb->id_, xer->id_});
     for (int num = 0; num < SAMPLE_NUM; num++) {
       Path p = SampleRandomWalk(ye, second_pool_ids, desired_targets, MAX_CONN_LENGTH);
-      if (p.back() == yb || p.back() == ybr) {
+      if (p.back() == xb || p.back() == xer) {
         bool is_new_path = true;
         for (auto ex_p: possible_connections) {
-          if (ex_p.IsSame(p)) {
+          if (ex_p.IsSameNoReverse(p)) {
             is_new_path = false;
             break;
           }
@@ -323,7 +324,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
         np.AppendPath(inter_path);
         np.AppendPath(target_path);
       }
-      if (p.nodes_.back() == ybr) {
+      if (p.nodes_.back() == yer) {
         np = Path(start_path.nodes_);
         np.AppendPath(inter_path);
         np.AppendPath(target_path.GetReverse());
@@ -335,7 +336,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
         np.AppendPath(inter_path);
         np.AppendPath(start_path);
       }
-      if (p.nodes_.back() == yb) {
+      if (p.nodes_.back() == xer) {
         np = Path(target_path.nodes_);
         np.AppendPath(inter_path);
         np.AppendPath(start_path.GetReverse());
@@ -402,7 +403,7 @@ bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfi
              bool& accept_higher_prob) {
   // @TODO add probs of moves into config
 
-  int move = rand()%20;
+  int move = rand()%21;
   if (move < 10) {
     accept_higher_prob = false;
     return ExtendPathsRandomly(paths, out_paths, config);
