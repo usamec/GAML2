@@ -3,11 +3,20 @@
 
 #include "node.h"
 
+static const string PATH_BIGNODE = "I";
+static const string PATH_EXTEND_RANDOMLY = "E";
+static const string PATH_BREAK = "B";
+static const string PATH_JOIN = "J";
+static const string PATH_BETTER = "+";
+
 class Path {
  public:
   Path() {}
   explicit Path(const vector<Node*> nodes) : nodes_(nodes) {}
+  explicit Path(const vector<Node*> nodes, const string history) : nodes_(nodes), history_(history) {}
   vector<Node*> nodes_;
+  // for debug purposes
+  string history_;
 
   Node*& operator[](size_t x) {
     return nodes_[x];

@@ -10,7 +10,7 @@
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
   vector<Path> ret;
   for (auto &n: nodes) {
-    ret.push_back(Path({n}));
+    ret.push_back(Path({n}, PATH_BIGNODE));
   }
   return ret;
 }
@@ -40,13 +40,25 @@ string Path::ToDebugString() const {
   return ret.str();
 }
 
-string PathsToDebugString(const vector<Path>& paths) {
+string PathsToDebugStringShort(const vector<Path>& paths) {
   stringstream ret;
   ret << paths.size() << " paths:  ";
   for (size_t i = 0; i < paths.size(); i++) {
     ret << paths[i].ToDebugString();
     if (i + 1 != paths.size()) {
       ret << "   ";
+    }
+  }
+  return ret.str();
+}
+
+string PathsToDebugString(const vector<Path>& paths) {
+  stringstream ret;
+  ret << paths.size() << " paths:\n";
+  for (size_t i = 0; i < paths.size(); i++) {
+    ret << "[" << paths[i].history_ <<  "] " << paths[i].ToDebugString();
+    if (i + 1 != paths.size()) {
+      ret << "\n";
     }
   }
   return ret.str();

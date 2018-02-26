@@ -57,7 +57,21 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
 
     if (accept) {
       cout << " accept";
+      if (old_prob < new_prob){
+        // debug
+        for (auto &np: new_paths) {
+          bool is_new = true;
+          for (auto &p: paths) {
+            if (p.IsSameNoReverse(np)) {
+              is_new = false;
+              break;
+            }
+          }
+          if (is_new) np.history_ += PATH_BETTER;
+        }
+      }
       old_prob = new_prob;
+
       paths = new_paths;
       probability_calculator.CommitProbabilityChanges(prob_changes);
     }

@@ -23,6 +23,7 @@ int FindPathWithSameEnding(vector<Path>& paths, int pi) {
 void MergePaths(vector<Path>& paths, int pi, int same_end) {
   assert(paths[pi].back() == paths[same_end][0]);
   paths[pi].AppendPath(paths[same_end], 1);
+  paths[pi].history_ += PATH_EXTEND_RANDOMLY;
   swap(paths[same_end], paths[paths.size()-1]);
   paths.pop_back();
 }
@@ -58,6 +59,7 @@ bool BreakPaths(const vector<Path>& paths, vector<Path>& out_paths,
   }
   int break_pos = 1+rand()%(out_paths[pi].size()-1);
   Path p2 = out_paths[pi].CutAt(break_pos, config.big_node_threshold);
+  p2.history_ = out_paths[pi].history_ + PATH_BREAK;
   out_paths.push_back(p2);
   return true;
 }
@@ -342,6 +344,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
         np.AppendPath(start_path.GetReverse());
       }
     }
+    np.history_ = start_path.history_ + PATH_JOIN;
 
     // @TODO check for correct initialising of pp_change
     PairedProbabilityChange pp_change;
@@ -404,17 +407,17 @@ bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfi
              bool& accept_higher_prob) {
   // @TODO add probs of moves into config
 
-  int move = rand()%21;
-  if (move < 10) {
+  int move = rand()%5;
+  if (move < 2) {
     accept_higher_prob = false;
     return ExtendPathsRandomly(paths, out_paths, config);
   }
-  if (10 <= move && move < 20) {
+  if (2 <= move && move < 4) {
     accept_higher_prob = true;
     return BreakPaths(paths, out_paths, config);
   }
   // @TODO Joining with advice move (high priority)
-  if (move == 20) {
+  if (move == 4) {
     accept_higher_prob = false; // @TODO check with Usama if correct
     return JoinWithAdvice(paths, out_paths, config, probability_calculator);
   }
