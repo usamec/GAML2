@@ -129,6 +129,7 @@ class PairedReadProbabilityCalculator {
   void EvalProbabilityChange(PairedProbabilityChange& prob_change, bool debug_output=true);
   // Get total probability from change and cached data
   double EvalTotalProbabilityFromChange(const PairedProbabilityChange& prob_change, bool write=false) ;
+  int GetPathsLength(const vector<Path>& paths) const;
  private:
 
   double InitTotalLogProb();
@@ -142,7 +143,7 @@ class PairedReadProbabilityCalculator {
 
 
 
-  int GetPathsLength(const vector<Path>& paths) const;
+
 
   double GetAlignmentProb(const PairedReadAlignment& al) const;
 

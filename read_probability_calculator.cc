@@ -298,8 +298,8 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
 
 double GlobalProbabilityCalculator::GetPathsProbability(
     const vector<Path>& paths, ProbabilityChanges& prob_changes) {
-  prob_changes.single_read_changes.clear();
   double total_prob = 0;
+  prob_changes.single_read_changes.clear();
   for (auto &single_read_calculator: single_read_calculators_) {
     SingleProbabilityChange ch;
     double prob = single_read_calculator.first.GetPathsProbability(paths, ch);

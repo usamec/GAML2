@@ -59,7 +59,8 @@ bool BreakPaths(const vector<Path>& paths, vector<Path>& out_paths,
   }
   int break_pos = 1+rand()%(out_paths[pi].size()-1);
   Path p2 = out_paths[pi].CutAt(break_pos, config.big_node_threshold);
-  p2.history_ = out_paths[pi].history_ + PATH_BREAK;
+  out_paths[pi].history_ = out_paths[pi].history_ + PATH_BREAK;
+  p2.history_ = out_paths[pi].history_;
   out_paths.push_back(p2);
   return true;
 }
@@ -269,7 +270,7 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
   vector<Path> possible_connections;
 
   const int SAMPLE_NUM = 100;
-  const int MAX_CONN_LENGTH = 5000; // bases, not nodes
+  const int MAX_CONN_LENGTH = disjoint_length * 3; // bases, not nodes
 
   if (!first_pool_ids.empty()) {
     unordered_set<int> desired_targets({yb->id_, yer->id_});
@@ -351,6 +352,9 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
     pp_change.added_paths.push_back(np);
     pp_change.removed_paths.push_back(target_path);
     pp_change.removed_paths.push_back(start_path);
+
+    pp_change.new_paths_length = pc.GetPathsLength(paths) - (int)start_path.ToString(true).size() - (int)target_path.ToString(true).size() + (int)np.ToString(true).size();
+    //pp_change.new_paths = paths;
 
     pc.EvalProbabilityChange(pp_change, false);
     double score = pc.EvalTotalProbabilityFromChange(pp_change, false);
