@@ -1,6 +1,10 @@
 message SingleReadSet {
+    // filename is relative to executing directory (fastq file)
     required string filename = 1;
-    optional double mismatch_prob = 2 [default = 0.01];
+    // @DEPRECATED optional double mismatch_prob = 2 [default = 0.01];
+    optional double insert_prob = 8 [default = 0.0001];
+    optional double del_prob = 9 [default = 0.0001];
+    optional double subst_prob = 10 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
     optional double min_prob_per_base = 4 [default = -0.7];
     optional double penalty_constant = 5 [default = 0];
@@ -8,9 +12,42 @@ message SingleReadSet {
     optional double weight = 7 [default = 1];
 }
 
+
+message PairedReadSet {
+    // filename is relative to executing directory (fastq file)
+    required string filename1 = 1;
+    // filename is relative to executing directory (fastq file)
+    required string filename2 = 8;
+    required double mean_distance = 9;
+    required double std_distance = 10;
+
+    optional string orientation = 12 [default = "FR"];
+    // @DEPRECATED optional double mismatch_prob = 15 [default = 0.05];
+    // ILLUMINA has almost no indels (http://www.molecularecologist.com/next-gen-table-3c-2014/)
+    optional double insert_prob = 2 [default = 0.0001];
+    optional double del_prob = 13 [default = 0.0001];
+    optional double subst_prob = 14 [default = 0.01];
+
+    optional double min_prob_start = 3 [default = -10];
+    optional double min_prob_per_base = 4 [default = -0.7];
+    optional double penalty_constant = 5 [default = 0];
+    optional int32 penalty_step = 6 [default = 0];
+    optional double weight = 7 [default = 1];
+    // If set then we use this read set as advice during walk extending.
+    optional bool use_as_advice = 11 [default = false];
+}
+
 message Config {
+    // filename is relative to executing directory
     required string starting_graph = 1;
-    optional string output_file = 3 [default = 'output.fasta'];
+    optional int32 big_nodes_threshold = 8 [default = 500];
+    optional string output_file = 3 [default = 'output_gaml.fasta'];
+    // log of the last execution
+    optional string log_file = 9 [default = 'gaml.log'];
+    // log of executions (dump of config file and time stamp)
+    optional string global_run_log_file = 11 [default = 'gaml_runs.log'];
+    // how often should program flush current solution to the output file (once in X iterations)
+    optional int32 output_flush_freq = 10 [default = 100];
 
     // Annealing settings: Temperature at iteration n is t0 / (log(n/n_divisor + 1))
     optional double t0 = 4 [default = 0.08];
@@ -19,4 +56,5 @@ message Config {
     optional int32 num_iterations = 6 [default = 100];
 
     repeated SingleReadSet single_short_reads = 2;
+    repeated PairedReadSet paired_reads = 7;
 }
