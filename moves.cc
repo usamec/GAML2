@@ -269,8 +269,9 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
 
   vector<Path> possible_connections;
 
-  const int SAMPLE_NUM = 500;
-  const int MAX_CONN_LENGTH = disjoint_length * 5; // bases, not nodes
+  // @TODO add to the config
+  const int SAMPLE_NUM = 300;
+  const int MAX_CONN_LENGTH = disjoint_length * 1; // bases, not nodes
 
   if (!first_pool_ids.empty()) {
     unordered_set<int> desired_targets({yb->id_, yer->id_});
@@ -399,6 +400,122 @@ bool JoinWithAdvice(const vector<Path>& paths, vector<Path>& out_paths,
   // @TODO add HiC choice
 }
 
+bool UntangleCrossedPaths(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config, GlobalProbabilityCalculator& probability_calculator) {
+  cerr << "UntangleCrossedPaths()" << endl;
+
+  // find nodes that are in more than one path
+
+  // node_id, path_id, pos
+  static unordered_map<int, vector<pair<int, int>>> paths_by_nodes;
+  paths_by_nodes.clear();
+
+  for (int i = 0; i < (int)paths.size(); i++) {
+    const auto &p = paths[i];
+    for (int j = 0; j < (int)p.nodes_.size(); j++) {
+      auto n = p.nodes_[j];
+      if (n->id_ > n->rc_->id_) n = n->rc_;
+      const int id = n->id_;
+      if (paths_by_nodes.count(id) == 0) {
+        paths_by_nodes[id] = vector<pair<int,int>>({make_pair(i, j)});
+      }
+      else {
+        paths_by_nodes[id].emplace_back(i, j);
+      }
+    }
+  }
+
+  // debug
+  {
+    cerr << "PATHS BY NODES: " << endl;
+    for (auto n: paths_by_nodes) {
+      cerr << n.first << ": ";
+      for (auto p: n.second) {
+        cerr << "(" << p.first << ", " << p.second << ") ";
+      }
+      cerr << endl;
+    }
+  }
+
+  vector<int> candidate_nodes;
+  vector<unordered_set<int>> candidate_paths;
+  unordered_set<int> path_buf;
+  for (const auto x: paths_by_nodes) {
+    const int nid = x.first;
+    path_buf.clear();
+    for (const auto p: x.second) {
+      path_buf.insert(p.first);
+    }
+    if (path_buf.size() >= 2) {
+      candidate_nodes.push_back(nid);
+      candidate_paths.push_back(path_buf);
+    }
+  }
+
+  if (candidate_nodes.empty()) return false;
+  // debug
+  {
+    cerr << "CANDIDATE NODES: " << endl;
+    for (auto x: candidate_nodes) cerr << x << " ";
+    cerr << endl;
+  }
+
+  const int r_pos = rand()%(int)candidate_nodes.size();
+  const int inter_node_id = candidate_nodes[r_pos];
+  vector<int> inter_paths(candidate_paths[r_pos].begin(), candidate_paths[r_pos].end());
+  const int r1_pos = rand()%(int)inter_paths.size();
+  swap(inter_paths[0], inter_paths[r1_pos]);
+  const int r2_pos = 1 + rand()%((int)(inter_paths).size() - 1);
+  swap(inter_paths[1], inter_paths[r2_pos]);
+
+  const int p1_id = inter_paths[0];
+  const int p2_id = inter_paths[1];
+
+  Path p1 = paths[p1_id];
+  Path p2 = paths[p2_id];
+  // @TODO prerobit nahodny vyber aby sanca vybrat miesto prekrizenia bola vacsia pre vacsi prekryv
+  const int BLANK = -1000*1000*1000;
+  int p1_start_pos = BLANK;
+  for (int i = 0; i < (int)p1.nodes_.size(); i++) {
+    const auto &n = p1.nodes_[i];
+    if (n->id_ == inter_node_id) {
+      p1_start_pos = i;
+      break;
+    }
+    else if (n->rc_->id_ == inter_node_id) {
+      p1_start_pos = (int)p1.nodes_.size() - i;
+      p1.Reverse();
+      break;
+    }
+  }
+  assert(p1_start_pos != BLANK);
+  int p2_start_pos = BLANK;
+  for (int i = 0; i < (int)p2.nodes_.size(); i++) {
+    const auto &n = p2.nodes_[i];
+    if (n->id_ == inter_node_id) {
+      p2_start_pos = i;
+      break;
+    }
+    else if (n->rc_->id_ == inter_node_id) {
+      p2_start_pos = (int)p2.nodes_.size() - i;
+      p2.Reverse();
+      break;
+    }
+  }
+  assert(p2_start_pos != BLANK);
+
+  cerr << "INTER NODE ID: " << inter_node_id << endl;
+  cerr << "PATH1: " << p1.ToDebugString() << endl;
+  cerr << "PATH2: " << p2.ToDebugString() << endl;
+  cerr << "p1_start_pos: " << p1_start_pos << ", p2_start_pos: " << p2_start_pos << endl;
+
+
+
+
+
+  exit(0);
+
+}
+
 void MakeMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfig& config, GlobalProbabilityCalculator& probability_calculator,
               bool& accept_higher_prob) {
   while (true) {
@@ -411,7 +528,7 @@ bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfi
              bool& accept_higher_prob) {
   // @TODO add probs of moves into config
 
-  int move = rand()%5;
+  int move = rand()%6;
   if (move < 2) {
     accept_higher_prob = false;
     return ExtendPathsRandomly(paths, out_paths, config);
@@ -424,6 +541,10 @@ bool TryMove(const vector<Path>& paths, vector<Path>& out_paths, const MoveConfi
   if (move == 4) {
     accept_higher_prob = false; // @TODO check with Usama if correct
     return JoinWithAdvice(paths, out_paths, config, probability_calculator);
+  }
+  if (move == 5) {
+    accept_higher_prob = false;
+    return UntangleCrossedPaths(paths, out_paths, config, probability_calculator);
   }
 
   // @TODO add Local improvement move (low priority)

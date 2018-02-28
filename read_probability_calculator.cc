@@ -194,8 +194,8 @@ double PairedReadProbabilityCalculator::GetRealReadProbability(double prob, int 
 double PairedReadProbabilityCalculator::EvalTotalProbabilityFromChange(const PairedProbabilityChange &prob_change,
                                                                        bool write) {
   double new_prob = total_log_prob_;
-  new_prob += log(old_paths_length_);
-  new_prob -= log(prob_change.new_paths_length);
+  new_prob += 2 * log(old_paths_length_);
+  new_prob -= 2 * log(prob_change.new_paths_length);
 
   // (read_id, prob_change)
   vector< pair<int, double> > changes;

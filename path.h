@@ -8,6 +8,7 @@ static const string PATH_EXTEND_RANDOMLY = "E";
 static const string PATH_BREAK = "B";
 static const string PATH_JOIN = "J";
 static const string PATH_BETTER = "+";
+static const string PATH_UNTANGLE = "U";
 
 class Path {
  public:
@@ -20,6 +21,11 @@ class Path {
 
   Node*& operator[](size_t x) {
     return nodes_[x];
+  }
+
+  Path& operator=(const Path& other) {
+    nodes_ = other.nodes_;
+    history_ = other.history_;
   }
 
   size_t size() const {
