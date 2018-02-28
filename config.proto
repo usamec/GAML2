@@ -1,7 +1,10 @@
 message SingleReadSet {
     // filename is relative to executing directory (fastq file)
     required string filename = 1;
-    optional double mismatch_prob = 2 [default = 0.01];
+    // @DEPRECATED optional double mismatch_prob = 2 [default = 0.01];
+    optional double insert_prob = 8 [default = 0.0001];
+    optional double del_prob = 9 [default = 0.0001];
+    optional double subst_prob = 10 [default = 0.01];
     optional double min_prob_start = 3 [default = -10];
     optional double min_prob_per_base = 4 [default = -0.7];
     optional double penalty_constant = 5 [default = 0];
@@ -19,7 +22,12 @@ message PairedReadSet {
     required double std_distance = 10;
 
     optional string orientation = 12 [default = "FR"];
-    optional double mismatch_prob = 2 [default = 0.01];
+    // @DEPRECATED optional double mismatch_prob = 15 [default = 0.05];
+    // ILLUMINA has almost no indels (http://www.molecularecologist.com/next-gen-table-3c-2014/)
+    optional double insert_prob = 2 [default = 0.0001];
+    optional double del_prob = 13 [default = 0.0001];
+    optional double subst_prob = 14 [default = 0.01];
+
     optional double min_prob_start = 3 [default = -10];
     optional double min_prob_per_base = 4 [default = -0.7];
     optional double penalty_constant = 5 [default = 0];

@@ -142,6 +142,18 @@ void SingleShortReadSet<TIndex>::VisitedPositions::Prepare(int offset, int read_
   cur_iter_++;
 }
 
+struct BFS_ITEM {
+  BFS_ITEM(int dist_, int read_pos_, int genome_pos_, int matches_=0, int inserts_=0, int dels_=0, int substs_=0) :
+      dist(dist_), read_pos(read_pos_), genome_pos(genome_pos_), matches(matches_), inserts(inserts_), dels(dels_), substs(substs_) {}
+  int dist;
+  int read_pos;
+  int genome_pos;
+  int matches;
+  int inserts;
+  int dels;
+  int substs;
+};
+
 template<class TIndex>
 bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& candidate,
                                       const string& genome,
@@ -158,56 +170,71 @@ bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& ca
   visited_positions.Prepare(candidate.genome_pos, read.size());
 
   // distance, (read_pos, genome_pos)
-  static deque<pair<int, pair<int, int>>> fr;
+  //static deque<pair<int, pair<int, int>>> fr;
+  static deque<BFS_ITEM> fr;
   fr.clear();
   //fr.push_back(make_pair(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1)));
-  fr.emplace_back(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1));
+  //fr.emplace_back(0, make_pair(candidate.read_pos+1, candidate.genome_pos+1));
+  fr.emplace_back(0, candidate.read_pos+1, candidate.genome_pos+1);
 
   while (!fr.empty()) {
     auto x = fr.front();
     fr.pop_front();
 
-    if (x.second.first == (int)read.size()) {
-      total_errs = x.first;
+    //if (x.second.first == (int)read.size()) {
+    if (x.read_pos == (int)read.size()) {
+      //total_errs = x.first;
+      total_errs = x.dist;
       break;
     }
 
-    if (x.first > max_err) {
-      return false; 
+    //if (x.first > max_err) {
+    if (x.dist > max_err) {
+      return false;
     }
 
-    if (x.second.second < (int)genome.size()) {
+    //if (x.second.second < (int)genome.size()) {
+    if (x.genome_pos < (int)genome.size()) {
       // match / mismatch
-      if (genome[x.second.second] == read[x.second.first]) {
-        auto nx = make_pair(x.first, make_pair(x.second.first+1, x.second.second+1));
-        fr.push_front(nx);
+      //if (genome[x.second.second] == read[x.second.first]) {
+      if (genome[x.genome_pos] == read[x.read_pos]) {
+        //auto nx = make_pair(x.first, make_pair(x.second.first+1, x.second.second+1));
+        //fr.push_front(nx);
+        fr.emplace_front(x.dist, x.read_pos+1, x.genome_pos+1); // @TODO add match, subst, insert, delete
+        auto nx = make_pair(x.dist, make_pair(x.read_pos+1, x.genome_pos + 1));
         visited_positions.Add(nx);
         // if matches we greedily continue
         continue;
       }
       // mismatch
       {
-        auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second+1));
+        //auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second+1));
+        auto nx = make_pair(x.dist+1, make_pair(x.read_pos+1, x.genome_pos+1));
         if (!visited_positions.IsVisited(nx)) {
-          fr.push_back(nx);
+          //fr.push_back(nx);
+          fr.emplace_back(x.dist+1, x.read_pos+1, x.genome_pos+1); // @TODO add match, subst, insert, delete
           visited_positions.Add(nx);
         }
       }
 
       // delete from genome
       {
-        auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second+1));
+        //auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second+1));
+        auto nx = make_pair(x.dist+1, make_pair(x.read_pos, x.genome_pos+1));
         if (!visited_positions.IsVisited(nx)) {
-          fr.push_back(nx);
+          //fr.push_back(nx);
+          fr.emplace_back(x.dist+1, x.read_pos, x.genome_pos+1); // @TODO Add match, substs, insert, delete
           visited_positions.Add(nx);
         }
       }
     }
     // insert to genome
     {
-      auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second));
+      //auto nx = make_pair(x.first+1, make_pair(x.second.first+1, x.second.second));
+      auto nx = make_pair(x.dist+1, make_pair(x.read_pos+1, x.genome_pos));
       if (!visited_positions.IsVisited(nx)) {
-        fr.push_back(nx);
+        //fr.push_back(nx);
+        fr.emplace_back(x.dist+1, x.read_pos+1, x.genome_pos); // @TODO add match, substs, insert, delete
         visited_positions.Add(nx);
       }
     }
@@ -217,54 +244,75 @@ bool SingleShortReadSet<TIndex>::ExtendAlignment(const CandidateReadPosition& ca
 
   fr.clear();
   //fr.push_back(make_pair(0, make_pair(candidate.read_pos, candidate.genome_pos)));
-  fr.emplace_back(0, make_pair(candidate.read_pos, candidate.genome_pos));
+  //fr.emplace_back(0, make_pair(candidate.read_pos, candidate.genome_pos));
+  fr.emplace_back(0, candidate.read_pos, candidate.genome_pos);
   while (!fr.empty()) {
     auto x = fr.front();
     fr.pop_front();
 
-    if (x.second.first == -1) {
-      al.read_id = candidate.read_id; 
-      al.dist = total_errs + x.first;
-      al.genome_pos = x.second.second + 1;
+    //if (x.second.first == -1) {
+    if (x.read_pos == -1) {
+
+      al.read_id = candidate.read_id;
+      //al.dist = total_errs + x.first;
+      //al.dist = total_errs + x.dist;
+      //al.genome_pos = x.second.second + 1;
+      al.genome_pos = x.genome_pos + 1;
+      al.matches = x.matches;
+      al.inserts = x.inserts;
+      al.dels = x.dels;
+      al.substs = x.substs;
+      al.dist = x.dist;
       return true;
     }
 
-    if (x.first > max_err) {
-      return false;
+    //if (x.first > max_err) {
+    if (x.dist > max_err) {
+        return false;
     }
 
-    if (x.second.second >= 0) {
+    //if (x.second.second >= 0) {
+    if (x.genome_pos >= 0) {
       // match / mismatch
-      if (genome[x.second.second] == read[x.second.first]) {
-        auto nx = make_pair(x.first, make_pair(x.second.first-1, x.second.second-1));
-        fr.push_front(nx);
+      //if (genome[x.second.second] == read[x.second.first]) {
+      if (genome[x.genome_pos] == read[x.read_pos]) {
+        //auto nx = make_pair(x.first, make_pair(x.second.first-1, x.second.second-1));
+        auto nx = make_pair(x.dist, make_pair(x.read_pos-1, x.genome_pos-1));
+        //fr.push_front(nx);
+        fr.emplace_front(x.dist, x.read_pos-1, x.genome_pos-1, x.matches+1, x.inserts, x.dels, x.substs);
         visited_positions.Add(nx);
         // if matches we greedily continue
         continue;
       }
       // mismatch
       {
-        auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second-1));
+        //auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second-1));
+        auto nx = make_pair(x.dist+1, make_pair(x.read_pos-1, x.genome_pos-1));
         if (!visited_positions.IsVisited(nx)) {
-          fr.push_back(nx);
+          //fr.push_back(nx);
+          fr.emplace_back(x.dist+1, x.read_pos-1, x.genome_pos-1, x.matches, x.inserts, x.dels, x.substs+1);
           visited_positions.Add(nx);
         }
       }
 
       // delete from genome
       {
-        auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second-1));
+        //auto nx = make_pair(x.first+1, make_pair(x.second.first, x.second.second-1));
+        auto nx = make_pair(x.dist+1, make_pair(x.read_pos, x.genome_pos-1));
         if (!visited_positions.IsVisited(nx)) {
-          fr.push_back(nx);
+          //fr.push_back(nx);
+          fr.emplace_back(x.dist+1, x.read_pos, x.genome_pos-1, x.matches, x.inserts, x.dels+1, x.substs);
           visited_positions.Add(nx);
         }
       }
     }
     // insert to genome
     {
-      auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second));
+      //auto nx = make_pair(x.first+1, make_pair(x.second.first-1, x.second.second));
+      auto nx = make_pair(x.dist+1, make_pair(x.read_pos-1, x.genome_pos));
       if (!visited_positions.IsVisited(nx)) {
-        fr.push_back(nx);
+        //fr.push_back(nx);
+        fr.emplace_back(x.dist+1, x.read_pos-1, x.genome_pos, x.matches, x.inserts+1, x.dels, x.substs);
         visited_positions.Add(nx);
       }
     }
@@ -410,7 +458,7 @@ vector<PairedReadAlignment> ShortPairedReadSet<TIndex>::GetAlignments(const stri
   // run through both vectors, find groups with equal read_id and do cross-check
   // for potential pairing (with respect to the assumed orientation)
   vector<SingleReadAlignment> current_als1, current_als2;
-  for (int current_read_id = 0; current_read_id < reads_1_.size() && it1 != als1.end() && it2 != als2.end(); current_read_id++) {
+  for (int current_read_id = 0; current_read_id < (int)reads_1_.size() && it1 != als1.end() && it2 != als2.end(); current_read_id++) {
     current_als1.clear();
     current_als2.clear();
     while (it1 != als1.end() && it1->read_id < current_read_id) it1++;

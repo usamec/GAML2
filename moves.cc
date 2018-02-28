@@ -269,8 +269,8 @@ bool JoinWithAdvicePaired(const vector<Path>& paths, vector<Path>& out_paths,
 
   vector<Path> possible_connections;
 
-  const int SAMPLE_NUM = 100;
-  const int MAX_CONN_LENGTH = disjoint_length * 3; // bases, not nodes
+  const int SAMPLE_NUM = 500;
+  const int MAX_CONN_LENGTH = disjoint_length * 5; // bases, not nodes
 
   if (!first_pool_ids.empty()) {
     unordered_set<int> desired_targets({yb->id_, yer->id_});

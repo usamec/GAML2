@@ -38,11 +38,13 @@ struct ProbabilityChanges {
 class SingleReadProbabilityCalculator {
  public:
   SingleReadProbabilityCalculator(
-      SingleShortReadSet<>* read_set, double mismatch_prob,
+      SingleShortReadSet<>* read_set, //double mismatch_prob,
+      double insert_prob, double del_prob, double subst_prob,
       double min_prob_start, double min_prob_per_base,
       double penalty_constant, int penalty_step) :
         read_set_(read_set), path_aligner_(read_set),
-        mismatch_prob_(mismatch_prob),
+        //mismatch_prob_(mismatch_prob),
+        insert_prob_(insert_prob), del_prob_(del_prob), subst_prob_(subst_prob),
         min_prob_start_(min_prob_start), min_prob_per_base_(min_prob_per_base),
         penalty_constant_(penalty_constant), penalty_step_(penalty_step),
         old_paths_length_(1) {
@@ -74,11 +76,15 @@ class SingleReadProbabilityCalculator {
 
   int GetPathsLength(const vector<Path>& paths) const;
 
-  double GetAlignmentProb(int dist, int read_length) const;
+  double GetAlignmentProbSimple(int dist, int read_length) const;
+  double GetAlignmentProb(int matches, int inserts, int dels, int substs) const;
 
   SingleShortReadSet<>* read_set_;
   SingleShortReadPathAligner path_aligner_;
-  double mismatch_prob_;
+  //double mismatch_prob_;
+  double insert_prob_;
+  double del_prob_;
+  double subst_prob_;
   double min_prob_start_;
   double min_prob_per_base_;
   double penalty_constant_;
@@ -91,11 +97,13 @@ class SingleReadProbabilityCalculator {
 };
 
 class PairedReadProbabilityCalculator {
-  // @TODO create paired read prob. calculator
  public:
   PairedReadProbabilityCalculator(
       ShortPairedReadSet<>* read_set,
-      double mismatch_prob,
+      //double mismatch_prob,
+      double insert_prob,
+      double del_prob,
+      double subst_prob,
       double min_prob_start,
       double min_prob_per_base,
       double penalty_constant,
@@ -103,7 +111,8 @@ class PairedReadProbabilityCalculator {
       double mean_distance,
       double std_distance,
       bool use_as_advice
-  ): read_set_(read_set), path_aligner_(read_set), mismatch_prob_(mismatch_prob),
+  ): read_set_(read_set), path_aligner_(read_set), //mismatch_prob_(mismatch_prob),
+     insert_prob_(insert_prob), del_prob_(del_prob), subst_prob_(subst_prob),
      min_prob_start_(min_prob_start), min_prob_per_base_(min_prob_per_base),
      penalty_constant_(penalty_constant), penalty_step_(penalty_step),
      old_paths_length_(1), mean_distance_(mean_distance),
@@ -139,16 +148,13 @@ class PairedReadProbabilityCalculator {
   // max(min_prob, prob)
   double GetRealReadProbability(double prob, int read_id) const;
 
-
-
-
-
-
-
   double GetAlignmentProb(const PairedReadAlignment& al) const;
 
   ShortPairedReadSet<>* read_set_;
-  double mismatch_prob_;
+  //double mismatch_prob_;
+  double insert_prob_;
+  double del_prob_;
+  double subst_prob_;
   double min_prob_start_;
   double min_prob_per_base_;
   double penalty_constant_;

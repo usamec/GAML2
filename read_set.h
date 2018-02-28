@@ -31,9 +31,9 @@ inline bool operator<(const CandidateReadPosition& a, const CandidateReadPositio
   return a.read_pos < b.read_pos;
 }
 
-struct SingleReadAlignment {
-  SingleReadAlignment() {}
-  SingleReadAlignment(int read_id_, int genome_pos_, int dist_, bool reversed_) :
+struct SingleReadAlignmentSimple {
+  SingleReadAlignmentSimple() {}
+  SingleReadAlignmentSimple(int read_id_, int genome_pos_, int dist_, bool reversed_) :
       read_id(read_id_), genome_pos(genome_pos_), dist(dist_), reversed(reversed_) {}
 
   int read_id;
@@ -41,6 +41,22 @@ struct SingleReadAlignment {
   int dist;
   bool reversed;
 };
+
+struct SingleReadAlignment {
+  SingleReadAlignment () {}
+  SingleReadAlignment (int read_id_, int genome_pos_, bool reversed_, int matches_, int inserts_, int dels_, int substs_, int dist_=0) :
+      read_id(read_id_), genome_pos(genome_pos_), reversed(reversed_), matches(matches_), inserts(inserts_), dels(dels_), substs(substs_), dist(dist_){}
+  int read_id;
+  int genome_pos;
+  bool reversed;
+  int inserts;
+  int dels;
+  int substs;
+  int matches;
+  int dist;
+};
+
+
 
 inline bool operator<(const SingleReadAlignment& a, const SingleReadAlignment& b) {
   return a.read_id < b.read_id;

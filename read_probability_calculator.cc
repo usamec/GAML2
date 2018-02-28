@@ -48,11 +48,13 @@ double SingleReadProbabilityCalculator::EvalTotalProbabilityFromChange(
   vector<pair<int, double>> changes;
   for (auto &a: prob_change.added_alignments) {
     //changes.push_back(make_pair(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
-    changes.emplace_back(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
+    //changes.emplace_back(a.read_id, GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
+    changes.emplace_back(a.read_id, GetAlignmentProb(a.matches, a.inserts, a.dels, a.substs));
   }
   for (auto &a: prob_change.removed_alignments) {
     //changes.push_back(make_pair(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size())));
-    changes.emplace_back(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
+    //changes.emplace_back(a.read_id, -GetAlignmentProb(a.dist, (*read_set_)[a.read_id].size()));
+    changes.emplace_back(a.read_id, -GetAlignmentProb(a.matches, a.inserts, a.dels, a.substs));
   }
   sort(changes.begin(), changes.end());
   int last_read_id = -47;
@@ -85,9 +87,19 @@ inline double SimpleReadProbModel (int dist, int read_length, double mismatch_pr
   return pow(mismatch_prob/3, dist) * pow(1 - mismatch_prob, read_length - dist);
 }
 
-double SingleReadProbabilityCalculator::GetAlignmentProb(
+inline double BetterReadProbModel (int matches, int inserts, int dels, int substs, double insert_prob, double del_prob, double subst_prob) {
+  return pow(insert_prob, inserts) * pow(del_prob, dels) * pow(subst_prob, substs) * pow(1 - insert_prob - del_prob - subst_prob, matches);
+}
+
+double SingleReadProbabilityCalculator::GetAlignmentProbSimple(
     int dist, int read_length) const {
-  return SimpleReadProbModel(dist, read_length, mismatch_prob_);
+  return 0;
+  //return SimpleReadProbModel(dist, read_length, mismatch_prob_);
+}
+
+double SingleReadProbabilityCalculator::GetAlignmentProb(
+    int matches, int inserts, int dels, int substs) const {
+  return BetterReadProbModel(matches, inserts, dels, substs, insert_prob_, del_prob_, subst_prob_);
 }
 
 void SingleReadProbabilityCalculator::CommitProbabilityChange(
@@ -255,8 +267,10 @@ bool is_same_orientation (const string& o1, const string& o2) {
 
 double PairedReadProbabilityCalculator::GetAlignmentProb(const PairedReadAlignment& al) const {
   if (! is_same_orientation(al.orientation, read_set_->orientation_)) {return 0;}
-  const double pp1 = SimpleReadProbModel(al.al1.dist, (*read_set_)[al.read_id].first.size(), mismatch_prob_);
-  const double pp2 = SimpleReadProbModel(al.al2.dist, (*read_set_)[al.read_id].second.size(), mismatch_prob_);
+  //const double pp1 = SimpleReadProbModel(al.al1.dist, (*read_set_)[al.read_id].first.size(), mismatch_prob_);
+  const double pp1 = BetterReadProbModel(al.al1.matches, al.al1.inserts, al.al1.dels, al.al1.substs, insert_prob_, del_prob_, subst_prob_);
+  //const double pp2 = SimpleReadProbModel(al.al2.dist, (*read_set_)[al.read_id].second.size(), mismatch_prob_);
+  const double pp2 = BetterReadProbModel(al.al2.matches, al.al2.inserts, al.al2.dels, al.al2.substs, insert_prob_, del_prob_, subst_prob_);
 
   return pp1 * pp2 * pdf_normal(al.insert_length, mean_distance_, std_distance_);
 }
@@ -267,7 +281,11 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
     rs->LoadReadSet(single_short_reads.filename());
     single_short_read_sets_.push_back(rs);
     single_read_calculators_.push_back(make_pair(SingleReadProbabilityCalculator(
-          rs, single_short_reads.mismatch_prob(),
+          rs,
+          //single_short_reads.mismatch_prob(),
+          single_short_reads.insert_prob(),
+          single_short_reads.del_prob(),
+          single_short_reads.subst_prob(),
           single_short_reads.min_prob_start(),
           single_short_reads.min_prob_per_base(),
           single_short_reads.penalty_constant(),
@@ -282,7 +300,10 @@ GlobalProbabilityCalculator::GlobalProbabilityCalculator(const Config& config) {
     paired_read_calculators_.push_back(make_pair(
         PairedReadProbabilityCalculator(
             rs,
-            paired_reads.mismatch_prob(),
+            //paired_reads.mismatch_prob(),
+            paired_reads.insert_prob(),
+            paired_reads.del_prob(),
+            paired_reads.subst_prob(),
             paired_reads.min_prob_start(),
             paired_reads.min_prob_per_base(),
             paired_reads.penalty_constant(),
