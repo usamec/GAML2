@@ -47,7 +47,7 @@ add_library(path_aligner path_aligner.cc)
 target_link_libraries(path_aligner path read_set graph)
 
 add_library(moves moves.cc)
-target_link_libraries(moves path)
+target_link_libraries(moves path read_probability_calculator)
 
 add_executable(moves_test moves_test.cc)
 target_link_libraries(moves_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} moves)

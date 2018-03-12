@@ -12,8 +12,10 @@ class Graph {
 
   vector<Node*> ReachForwardWithThreshold(Node* start, int threshold) const;
   vector<Node*> ReachLocalWithThreshold(Node* start, int threshold) const;
+  vector<Node*> GetDrainageBasinForNode(Node *target);
 
   vector<Node*> nodes_;
+  // `k_` := k from de Bruijn graph (velvet output graph header, see `::Load Graph` )
   int k_;
 };
 

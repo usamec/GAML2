@@ -17,6 +17,7 @@ class Node {
 
   void AddNext(Node *x) {
     next_.push_back(x);
+    x->prev_.push_back(this);
   }
 
   bool IsBig(size_t threshold) const {
@@ -33,12 +34,16 @@ class Node {
 
   string str_;
   int id_;
+  // `rc_` := reversed complement node
   Node* rc_;
+  // `next_` out-edges from the current node
   vector<Node*> next_;
+  vector<Node*> prev_;
   Graph* graph_;
 };
 
 pair<Node*,Node*> LoadNode(istream& is, int number, Graph* gr);
+// Create NNNNNN...NNN contig/node
 Node* MakeGap(int gap_length);
 
 #endif

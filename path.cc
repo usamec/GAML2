@@ -4,15 +4,18 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <unordered_set>
+#include <iostream>
 
 vector<Path> BuildPathsFromSingleNodes(const vector<Node*>& nodes) {
   vector<Path> ret;
   for (auto &n: nodes) {
-    ret.push_back(Path({n}));
+    ret.push_back(Path({n}, PATH_BIGNODE));
   }
   return ret;
 }
 
+// nodes have to be adjacent (in the same direction) in the graph
 bool Path::CheckPath() const {
   for (size_t i = 0; i + 1 < nodes_.size(); i++) {
     if (nodes_[i]->IsGap() || nodes_[i+1]->IsGap()) continue;
@@ -37,13 +40,25 @@ string Path::ToDebugString() const {
   return ret.str();
 }
 
-string PathsToDebugString(const vector<Path>& paths) {
+string PathsToDebugStringShort(const vector<Path>& paths) {
   stringstream ret;
   ret << paths.size() << " paths:  ";
   for (size_t i = 0; i < paths.size(); i++) {
     ret << paths[i].ToDebugString();
     if (i + 1 != paths.size()) {
       ret << "   ";
+    }
+  }
+  return ret.str();
+}
+
+string PathsToDebugString(const vector<Path>& paths) {
+  stringstream ret;
+  ret << paths.size() << " paths:\n";
+  for (size_t i = 0; i < paths.size(); i++) {
+    ret << "[" << paths[i].history_ <<  "] " << paths[i].ToDebugString();
+    if (i + 1 != paths.size()) {
+      ret << "\n";
     }
   }
   return ret.str();
@@ -66,7 +81,7 @@ void Path::Reverse() {
   nodes_ = nodes_new;
 }
 
-Path Path::GetReverse() {
+Path Path::GetReverse() const {
   vector<Node*> nodes_new;
   for (int i = nodes_.size() - 1; i >= 0; i--) {
     nodes_new.push_back(nodes_[i]->rc_);
@@ -97,6 +112,12 @@ bool Path::IsSame(const Path& p) const {
   return true;
 }
 
+bool Path::IsSameNoReverse(const Path& p) const {
+  if (p.nodes_.size() != nodes_.size()) return false;
+  if (p.nodes_ == nodes_) return true;
+  return false;
+}
+
 bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distance_threshold) {
   int added_distance = 0;
   int added_steps = 0;
@@ -116,12 +137,60 @@ bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distan
 
 Path Path::CutAt(int pos, int big_node_threshold) {
   int part1_end = pos - 1;
-  while (!nodes_[part1_end]->IsBig(big_node_threshold)) part1_end--;
+  while (part1_end >= 0 && !nodes_[part1_end]->IsBig(big_node_threshold)) part1_end--;
   int part2_start = pos;
-  while (!nodes_[part2_start]->IsBig(big_node_threshold)) part2_start++;
-  Path p2(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()));
-  nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + part1_end + 1);
+  while (part2_start < nodes_.size() && !nodes_[part2_start]->IsBig(big_node_threshold)) part2_start++;
+  Path p2;
+  if (part2_start < nodes_.size()) p2 = Path(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()), history_);
+
+  nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + (part1_end + 1));
   return p2;
+}
+bool Path::isDisjoint(const Path &p) const {
+  // complementary nodes also not allowed
+  unordered_set<int> nodes_ids;
+  for (auto node: nodes_) {
+    nodes_ids.insert(node->id_);
+  }
+  for (auto node: p.nodes_) {
+    if (nodes_ids.count(node->id_) > 0) return false;
+    // check for complementar
+    if (nodes_ids.count(node->rc_->id_) > 0) return false;
+  }
+  return true;
+}
+bool Path::isPartlyDisjoint(const Path &p, int dist) const {
+  // complementary nodes also not allowed
+  unordered_set<int> nodes_ids;
+
+  int len = 0;
+  for (size_t i = 0; i < nodes_.size() && len < dist; i++) {
+    const auto &node = nodes_[i];
+    nodes_ids.insert(node->id_);
+    len += node->str_.size();
+  }
+  len = 0;
+  for (size_t i = nodes_.size() - 1; i >= 0 && len < dist; i--) {
+    const auto &node = nodes_[i];
+    nodes_ids.insert(node->id_);
+    len += node->str_.size();
+  }
+
+  // checking begin and end of path p
+  len = 0;
+  for (size_t i = 0; i < p.nodes_.size() && len < dist; i++) {
+    const auto &node = p.nodes_[i];
+    if (nodes_ids.count(node->id_) > 0 || nodes_ids.count(node->rc_->id_) > 0) return false;
+    len += node->str_.size();
+  }
+  len = 0;
+  for (size_t i = p.nodes_.size() - 1; i >= 0 && len < dist; i--) {
+    const auto &node = p.nodes_[i];
+    if (nodes_ids.count(node->id_) > 0 || nodes_ids.count(node->rc_->id_) > 0) return false;
+    len += node->str_.size();
+  }
+
+  return true;
 }
 
 void PathsToFasta(const vector<Path>& paths, ostream &of) {
