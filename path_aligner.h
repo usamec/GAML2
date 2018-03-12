@@ -31,9 +31,10 @@ class SingleShortReadPathAligner {
   void InsertAlignmentForPath(const Path& p, vector<SingleReadAlignment>& al) {
     int pos = GetAlignmentPos(p);
     if (pos == -1) {
+      if (cache_.size() >= MAX_CACHE_SIZE) RemoveAllAlignments();
       sort(al.begin(), al.end());
       cache_.push_back(make_tuple(p, al, next_usage_t_++));
-      while (cache_.size() > MAX_CACHE_SIZE) {
+      /*while (cache_.size() > MAX_CACHE_SIZE) {
         int oldest_pos = 0;
         for (int i = 0; i < (int)cache_.size(); i++) {
           const auto &t = cache_[i];
@@ -44,8 +45,14 @@ class SingleShortReadPathAligner {
         }
         swap(cache_[oldest_pos], cache_.back());
         cache_.pop_back();
-      }
+      }*/
     }
+  }
+
+
+  void RemoveAllAlignments() {
+    cache_.clear();
+    next_usage_t_ = 0;
   }
 
   int GetAlignmentPos(const Path& p) const{
@@ -94,9 +101,10 @@ class PairedReadPathAligner {
   void InsertAlignmentForPath(const Path& p, vector<PairedReadAlignment>& al) {
     int pos = GetAlignmentPos(p);
     if (pos == -1) {
+      if (cache_.size() >= MAX_CACHE_SIZE) RemoveAllAlignments();
       sort(al.begin(), al.end());
       cache_.push_back(make_tuple(p, al, next_usage_t_++));
-      while (cache_.size() > MAX_CACHE_SIZE) {
+      /*while (cache_.size() > MAX_CACHE_SIZE) {
         int oldest_pos = 0;
         for (int i = 0; i < (int)cache_.size(); i++) {
           const auto &t = cache_[i];
@@ -107,8 +115,13 @@ class PairedReadPathAligner {
         }
         swap(cache_[oldest_pos], cache_.back());
         cache_.pop_back();
-      }
+      }*/
     }
+  }
+
+  void RemoveAllAlignments() {
+    cache_.clear();
+    next_usage_t_ = 0;
   }
 
   int GetAlignmentPos(const Path& p) const{

@@ -137,11 +137,13 @@ bool Path::ExtendRandomly(int big_node_threshold, int step_threshold, int distan
 
 Path Path::CutAt(int pos, int big_node_threshold) {
   int part1_end = pos - 1;
-  while (!nodes_[part1_end]->IsBig(big_node_threshold)) part1_end--;
+  while (part1_end >= 0 && !nodes_[part1_end]->IsBig(big_node_threshold)) part1_end--;
   int part2_start = pos;
-  while (!nodes_[part2_start]->IsBig(big_node_threshold)) part2_start++;
-  Path p2(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()));
-  nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + part1_end + 1);
+  while (part2_start < nodes_.size() && !nodes_[part2_start]->IsBig(big_node_threshold)) part2_start++;
+  Path p2;
+  if (part2_start < nodes_.size()) p2 = Path(vector<Node*>(nodes_.begin() + part2_start, nodes_.end()), history_);
+
+  nodes_ = vector<Node*>(nodes_.begin(), nodes_.begin() + (part1_end + 1));
   return p2;
 }
 bool Path::isDisjoint(const Path &p) const {

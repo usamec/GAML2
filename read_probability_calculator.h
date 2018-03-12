@@ -60,6 +60,10 @@ class SingleReadProbabilityCalculator {
   // probability)
   void CommitProbabilityChange(const SingleProbabilityChange &prob_change);
 
+  int GetPathsLength(const vector<Path>& paths) const;
+  // Evals change with filled added and removed paths
+  void EvalProbabilityChange(SingleProbabilityChange& prob_change);
+
  private:
   double InitTotalLogProb();
 
@@ -68,13 +72,12 @@ class SingleReadProbabilityCalculator {
   // max(min_prob, prob)
   double GetRealReadProbability(double prob, int read_id) const;
 
-  // Evals change with filled added and removed paths
-  void EvalProbabilityChange(SingleProbabilityChange& prob_change);
+
 
   // Get total probability from change and cached data
   double EvalTotalProbabilityFromChange(const SingleProbabilityChange& prob_change, bool write=false);
 
-  int GetPathsLength(const vector<Path>& paths) const;
+
 
   double GetAlignmentProbSimple(int dist, int read_length) const;
   double GetAlignmentProb(int matches, int inserts, int dels, int substs) const;

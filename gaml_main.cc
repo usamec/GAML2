@@ -36,7 +36,9 @@ void PerformOptimization(GlobalProbabilityCalculator& probability_calculator,
   MoveConfig move_config;
   for (int it_num = 1; it_num <= gaml_config.num_iterations() && NOT_SIGINTED; it_num++) {
     double T = gaml_config.t0() / log(it_num / gaml_config.n_divisor() + 1);
-    cout << "ITERATION: " << it_num << "\tT: " << T << "\tPROB: " << old_prob << endl;
+    int total_size = 0;
+    for (auto &p: paths) total_size += p.ToString(true).size();
+    cout << "ITERATION: " << it_num << "\tT: " << T << "\tPROB: " << old_prob << "\t SIZE: " << total_size <<  endl;
 
     vector<Path> new_paths;
     bool accept_high_prob;
